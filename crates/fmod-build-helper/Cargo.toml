@@ -3,7 +3,7 @@ name = "fmod-build-helper"
 version = "0.1.0"
 edition.workspace = true
 rust-version.workspace = true
-license-file = "MIT OR Apache-2.0"
+license = "MIT OR Apache-2.0"
 
 description = "Build helper for FMOD Engine bindings"
 repository = "https://github.com/CAD97/fmod-rs"
