@@ -55,7 +55,7 @@ pub fn transpile(inc: impl AsRef<Path>, header: &str, extra_fixup: &[(&str, &str
     replace!(r"^static ", "pub ");
 
     // #define F_CALLBACK F_CALL
-    replace!("F_CALLBACK", "F_CALL");
+    replace!(r"\wF_CALLBACK\w", "F_CALL");
     replace!("#define F_CALL F_CALL", "");
 
     // translate #define
