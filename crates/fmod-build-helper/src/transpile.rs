@@ -1,21 +1,20 @@
-//! We could use bindgen to translate the C headers, but that requires libclang
-//! at build time, and the FMOD headers are straightforward and simple enough
-//! that parsing with regex is a tenable solution. As a bonus, this maintains
-//! the original header organization.
-//!
-//! NB: The FMOD headers are the same on all platforms, so we could transpile
-//! them once and not require downstream users to transpile the headers again.
-//! However, it's important that the translated headers match the headers for
-//! the specific version of FMOD being linked against to maintain the soundness
-//! critical version verification, and the simplest way to resolve this is to
-//! just transpile the entire set of headers every time. This also allows us to
-//! avoid redistributing the FMOD headers, which is legally questionable, unlike
-//! redistributing the examples or a bindings library which links against FMOD.
-
 use build_rs::{input::out_dir, output::rerun_if_changed};
 use regex::Regex;
 use std::{borrow::Cow, fs, path::Path, sync::LazyLock};
 
+/// We could use bindgen to translate the C headers, but that requires libclang
+/// at build time, and the FMOD headers are straightforward and simple enough
+/// that parsing with regex is a tenable solution. As a bonus, this maintains
+/// the original header organization.
+///
+/// NB: The FMOD headers are the same on all platforms, so we could transpile
+/// them once and not require downstream users to transpile the headers again.
+/// However, it's important that the translated headers match the headers for
+/// the specific version of FMOD being linked against to maintain the soundness
+/// critical version verification, and the simplest way to resolve this is to
+/// just transpile the entire set of headers every time. This also allows us to
+/// avoid redistributing the FMOD headers, which is legally questionable, unlike
+/// redistributing the examples or a bindings library which links against FMOD.
 pub fn transpile(inc: impl AsRef<Path>, header: &str, extra_fixup: &[(&str, &str)]) {
     let path = inc.as_ref().join(header);
     rerun_if_changed(&path);

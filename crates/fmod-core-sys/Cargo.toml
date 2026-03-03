@@ -14,6 +14,4 @@ categories = ["external-ffi-bindings", "game-development", "multimedia::audio"]
 [build-dependencies]
 build-rs.workspace = true
 regex.workspace = true
-
-[target.'cfg(windows)'.build-dependencies]
-winreg.workspace = true
+fmod-build-helper.workspace = true

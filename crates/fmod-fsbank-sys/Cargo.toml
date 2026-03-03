@@ -16,7 +16,4 @@ fmod-core-sys.workspace = true # WEIRD: this is unused other than DEP_FMOD_*
 
 [build-dependencies]
 build-rs.workspace = true
-regex.workspace = true
-
-[target.'cfg(windows)'.build-dependencies]
-winreg.workspace = true
+fmod-build-helper.workspace = true
