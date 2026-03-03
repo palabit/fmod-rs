@@ -123,10 +123,6 @@ pub fn transpile(inc: impl AsRef<Path>, header: &str, extra_fixup: &[(&str, &str
         "$1 fn $3($4) -> $2$5"
     );
     replace!(r" -> void *(;|$)", "$1");
-    replace!(
-        r#"extern "system" +fn \((.*) \.\.\.\)"#,
-        r#"extern "C" fn ($1 ...)"#,
-    );
 
     // make fn ptrs optional
     replace!(r#"= (unsafe extern "system" +fn.*?);"#, "= Option<$1>;");
