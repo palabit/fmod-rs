@@ -1,26 +1,38 @@
-use std::env;
+use build_rs::{input::*, output::*};
 
 fn main() {
-    println!("cargo::rerun-if-changed=build.rs");
+    rerun_if_changed("build.rs");
 
-    let Ok(fmod_version) = env::var("DEP_FMOD_VERSION") else {
+    let Some(fmod_version) = dep_metadata("fmod", "version") else {
         return;
     };
     let version = fmod_version.split('.').collect::<Vec<_>>();
     assert!(version.len() == 3);
 
+    let product_version: u8 = version[0].parse().unwrap();
     let major_version: u8 = version[1].parse().unwrap();
     let minor_version: u8 = version[2].parse().unwrap();
 
-    println!("cargo::rustc-cfg=fmod_version_major=\"{major_version}\"");
-    for version in 0..=major_version {
-        println!("cargo::rustc-cfg=has_fmod_version_major=\"{version}\"");
+    assert_eq!(product_version, 2, "Only FMOD 2.02 and 2.03 are supported");
+
+    rustc_check_cfg_values("fmod_version_major", &["2", "3"]);
+    rustc_cfg_value("fmod_version_major", &format!("{major_version}"));
+
+    rustc_check_cfg_values("fmod_has_version_major", &["2", "3"]);
+    for version in 2..=major_version {
+        rustc_cfg_value("has_fmod_version_major", &format!("{version}"));
     }
 
-    println!("cargo::rustc-cfg=fmod_version_minor=\"{minor_version}\"");
+    let possible_versions: Vec<_> = (0..=99).map(|v| v.to_string()).collect();
+    let possible_versions: Vec<_> = possible_versions.iter().map(|v| v as _).collect();
+
+    rustc_check_cfg_values("fmod_version_minor", &possible_versions[..]);
+    rustc_cfg_value("fmod_version_minor", &format!("{minor_version}"));
+
+    rustc_check_cfg_values("fmod_has_version_minor", &possible_versions[..]);
     for version in 0..=minor_version {
-        println!("cargo::rustc-cfg=has_fmod_version_minor=\"{version}\"");
+        rustc_cfg_value("has_fmod_version_minor", &format!("{version}"));
     }
 
-    println!("cargo::rustc-env=FMOD_VERSION={fmod_version}");
+    rustc_env("FMOD_VERSION", &fmod_version.to_string());
 }

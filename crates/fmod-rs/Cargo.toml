@@ -70,4 +70,4 @@ log = { version = "0.4.21", optional = true }
 mint = { version = "0.5.9", optional = true }
 
 [build-dependencies]
-build-rs = "0.1.2"
+build-rs.workspace = true
