@@ -3,6 +3,26 @@ use fmod_build_helper::{fmod_core_path, transpile};
 use regex::Regex;
 use std::fs;
 
+#[rustfmt::skip]
+static HEADERS: &[(&str, &[(&str, &str)])] = &[
+    ("fmod.h", &[]),
+    ("fmod_codec.h", &[
+        (r"pub type FMOD_CODEC_(STATE|WAVEFORMAT).*?\n", ""), // nonopaque
+    ]),
+    ("fmod_common.h", &[
+        (r"FMOD_BUILDNUMBER: ::core::ffi::c_int", "FMOD_BUILDNUMBER: ::core::ffi::c_uint"),
+        (r"pub type FMOD_ASYNCREADINFO.*?\n", ""), // nonopaque
+    ]),
+    ("fmod_dsp.h", &[
+        (r"pub type FMOD_(DSP_(STATE|BUFFER_ARRAY)|COMPLEX).*?\n", ""), // nonopaque
+    ]),
+    ("fmod_dsp_effects.h", &[]),
+    ("fmod_errors.h", &[]),
+    ("fmod_output.h", &[
+        (r"pub type FMOD_OUTPUT_(STATE|OBJECT3DINFO).*?\n", ""), // nonopaque
+    ]),
+];
+
 fn main() {
     rerun_if_changed("build.rs");
 
@@ -16,25 +36,9 @@ fn main() {
     rustc_link_lib(&fmod_obj());
     link_extra();
 
-    #[rustfmt::skip]
-    {
-        transpile(&inc, "fmod.h", &[]);
-        transpile(&inc, "fmod_codec.h", &[
-            (r"pub type FMOD_CODEC_(STATE|WAVEFORMAT).*?\n", ""), // nonopaque
-        ]);
-        transpile(&inc, "fmod_common.h", &[
-            (r"FMOD_BUILDNUMBER: ::core::ffi::c_int", "FMOD_BUILDNUMBER: ::core::ffi::c_uint"),
-            (r"pub type FMOD_ASYNCREADINFO.*?\n", ""), // nonopaque
-        ]);
-        transpile(&inc, "fmod_dsp.h", &[
-            (r"pub type FMOD_(DSP_(STATE|BUFFER_ARRAY)|COMPLEX).*?\n", ""), // nonopaque
-        ]);
-        transpile(&inc, "fmod_dsp_effects.h", &[]);
-        transpile(&inc, "fmod_errors.h", &[]);
-        transpile(&inc, "fmod_output.h", &[
-            (r"pub type FMOD_OUTPUT_(STATE|OBJECT3DINFO).*?\n", ""), // nonopaque
-        ]);
-    };
+    for (header, extra_fixup) in HEADERS {
+        transpile(&inc, header, extra_fixup);
+    }
 
     if cargo_cfg_target_vendor() == "uwp" {
         transpile(&inc, "fmod_uwp.h", &[]);

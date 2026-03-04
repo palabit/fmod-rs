@@ -1,6 +1,12 @@
 use build_rs::{input::*, output::*};
 use fmod_build_helper::{fsbank_path, transpile};
 
+#[rustfmt::skip]
+static HEADERS: &[(&str, &[(&str, &str)])] = &[
+    ("fsbank.h", &[]),
+    ("fsbank_errors.h", &[]),
+];
+
 fn main() {
     rerun_if_changed("build.rs");
 
@@ -13,8 +19,9 @@ fn main() {
     rerun_if_changed(&lib);
     rustc_link_lib(&fsbank_obj());
 
-    transpile(&inc, "fsbank.h", &[]);
-    transpile(&inc, "fsbank_errors.h", &[]);
+    for (header, extra_fixup) in HEADERS {
+        transpile(&inc, header, extra_fixup);
+    }
 }
 
 fn fsbank_obj() -> String {

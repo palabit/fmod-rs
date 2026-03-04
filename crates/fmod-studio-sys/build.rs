@@ -1,6 +1,12 @@
 use build_rs::{input::*, output::*};
 use fmod_build_helper::{fmod_studio_path, transpile};
 
+#[rustfmt::skip]
+static HEADERS: &[(&str, &[(&str, &str)])] = &[
+    ("fmod_studio.h", &[]),
+    ("fmod_studio_common.h", &[]),
+];
+
 fn main() {
     rerun_if_changed("build.rs");
 
@@ -13,8 +19,9 @@ fn main() {
     rerun_if_changed(&lib);
     rustc_link_lib(&fmodstudio_obj());
 
-    transpile(&inc, "fmod_studio.h", &[]);
-    transpile(&inc, "fmod_studio_common.h", &[]);
+    for (header, extra_fixup) in HEADERS {
+        transpile(&inc, header, extra_fixup);
+    }
 }
 
 fn fmodstudio_obj() -> String {
