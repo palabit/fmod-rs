@@ -10,7 +10,7 @@ use {
 #[allow(trivial_bounds)]
 impl Deref for Channel
 where
-    ChannelControl: DerefRequiresMetaSized,
+    ChannelControl: DerefSized,
 {
     type Target = ChannelControl;
     fn deref(&self) -> &Self::Target {
@@ -21,7 +21,7 @@ where
 #[allow(trivial_bounds)]
 impl DerefMut for Channel
 where
-    ChannelControl: DerefRequiresMetaSized,
+    ChannelControl: DerefSized,
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.as_mut()

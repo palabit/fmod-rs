@@ -16,6 +16,16 @@ name = "fmod"
 
 [features]
 default = ["core", "log"]
+_ide_default = [
+    "default",
+    "studio",
+    "fsbank",
+    "mint",
+    "raw",
+    "unstable_doc_cfg",
+    "unstable_read_buf",
+    "unstable_trait_alias",
+]
 
 #! ## Feature flags
 

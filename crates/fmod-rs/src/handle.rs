@@ -45,7 +45,7 @@ pub(crate) trait MetaSized {}
 #[cfg(not(feature = "unstable_extern_type"))]
 impl<T: ?Sized> MetaSized for T {}
 
-pub(crate) use MetaSized as DerefRequiresMetaSized;
+pub(crate) use MetaSized as DerefSized;
 
 #[allow(clippy::missing_safety_doc)]
 /// FMOD resources managed by a [Handle].
@@ -217,10 +217,7 @@ impl<T: ?Sized + PointeeSized + Resource> Handle<'_, T> {
     }
 }
 
-impl<T: ?Sized + PointeeSized + Resource> Deref for Handle<'_, T>
-where
-    T: DerefRequiresMetaSized,
-{
+impl<T: ?Sized + DerefSized + Resource> Deref for Handle<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &T {
@@ -228,10 +225,7 @@ where
     }
 }
 
-impl<T: ?Sized + PointeeSized + Resource> DerefMut for Handle<'_, T>
-where
-    T: DerefRequiresMetaSized,
-{
+impl<T: ?Sized + DerefSized + Resource> DerefMut for Handle<'_, T> {
     fn deref_mut(&mut self) -> &mut T {
         self.deref_mut()
     }

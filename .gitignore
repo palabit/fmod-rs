@@ -3,8 +3,9 @@
 
 /example.log
 
-# We can't ship the DLLs; see FMOD_LICENSE.txt
-# https://www.fmod.com/sales
-/lib
-/fmod*
-/fsbank*
+# We don't vendor the SDK; see FMOD_LICENSE.txt https://www.fmod.com/sales
+/*.lib
+/*.dll
+/*.dylib
+/*.so
+/*.a
