@@ -8,6 +8,7 @@ rust-version = "1.93.1"
 
 [workspace.dependencies]
 fmod-build-helper = { version = "0.1.1", path = "crates/fmod-build-helper" }
+fmod-rs = { path = "crates/fmod-rs", features = ["_ide_default"] }
 fmod-core-sys = { version = "1.0.1", path = "crates/fmod-core-sys" }
 fmod-studio-sys = { version = "1.0.1", path = "crates/fmod-studio-sys" }
 fmod-fsbank-sys = { version = "1.0.1", path = "crates/fmod-fsbank-sys" }

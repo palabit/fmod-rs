@@ -8,7 +8,7 @@ publish = false
 anyhow = "1.0.86"
 bitflags = "2.5.0"
 crossterm = "0.27.0"
-fmod-rs = { path = "../crates/fmod-rs" }
+fmod-rs.workspace = true
 tracing = "0.1.40"
 tracing-appender = "0.2.3"
 tracing-panic = "0.1.2"
