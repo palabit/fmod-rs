@@ -3,7 +3,7 @@ use {
     smart_default::SmartDefault,
     std::{
         borrow::Cow,
-        ffi::{c_char, CStr},
+        ffi::{CStr, c_char},
         mem, ptr, slice,
     },
 };

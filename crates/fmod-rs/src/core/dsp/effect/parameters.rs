@@ -306,7 +306,7 @@ pub mod ConvolutionReverb {
             unsafe {
                 // SAFETY: assumes uninit i16 are never asserted init by the AM
                 let data_buf = &mut *(ir_data.spare_capacity_mut() as *mut _ as *mut [i16]);
-                let data_read = sound.read_data(bytemuck::cast_slice_mut(data_buf))?;
+                let data_read = sound.read_data(zerocopy::transmute_mut!(data_buf))?;
                 ir_data.set_len(data_read / size_of::<i16>() + 1);
             }
 

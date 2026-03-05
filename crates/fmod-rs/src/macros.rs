@@ -392,7 +392,6 @@ macro_rules! fmod_flags {
         $(#[$meta])*
         #[repr(transparent)]
         #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-        #[derive(::bytemuck::Pod, ::bytemuck::Zeroable)]
         #[derive(::zerocopy::FromBytes, ::zerocopy::IntoBytes)]
         #[derive(::zerocopy::KnownLayout, ::zerocopy::Immutable)]
         $vis struct $Name {
@@ -641,7 +640,6 @@ macro_rules! fmod_enum {
         #[repr(i32)]
         #[non_exhaustive]
         #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-        #[derive(::bytemuck::NoUninit)]
         #[derive(::zerocopy::TryFromBytes, ::zerocopy::IntoBytes)]
         #[derive(::zerocopy::KnownLayout, ::zerocopy::Immutable)]
         $vis enum $Name {
@@ -653,9 +651,6 @@ macro_rules! fmod_enum {
 
         #[allow(clippy::manual_range_contains)]
         impl $Name {
-            raw! {
-                pub const RAW_RANGE: ::std::ops::Range<i32> = $MIN..$MAX;
-            }
             raw! {
                 pub const fn zeroed() -> $Name {
                     unsafe { Self::from_raw(0) }
@@ -706,32 +701,30 @@ macro_rules! fmod_enum {
         }
 
         $(
-            static_assert!($Name::RAW_RANGE.start <= $Name::$Variant.into_raw() && $Name::$Variant.into_raw() < $Name::RAW_RANGE.end);
+            static_assert!($MIN <= $Name::$Variant.into_raw() && $Name::$Variant.into_raw() < $MAX);
         )*
 
-        static_assert!($Name::RAW_RANGE.start <= 0 && 0 < $Name::RAW_RANGE.end);
+        static_assert!($MIN <= 0 && 0 < $MAX);
         assert_type_eq!($Raw, i32);
 
         static_assert! {
-            [$($Name::$Variant),*].len() == ($Name::RAW_RANGE.end - $Name::RAW_RANGE.start) as usize,
+            [$($Name::$Variant),*].len() == ($MAX - $MIN) as usize,
             concat!("fmod_enum! ", stringify!($Raw), " is missing some variant(s) in ", file!()),
         }
 
-        unsafe impl ::bytemuck::Zeroable for $Name {}
-
-        unsafe impl ::bytemuck::Contiguous for $Name {
-            type Int = $Raw;
-
-            const MAX_VALUE: $Raw = $MAX - 1;
-            const MIN_VALUE: $Raw = $MIN;
-        }
-
-        #[allow(clippy::manual_range_contains)]
-        unsafe impl ::bytemuck::CheckedBitPattern for $Name {
-            type Bits = $Raw;
-
-            fn is_valid_bit_pattern(&bits: &$Raw) -> bool {
-                $MIN <= bits && bits < $MAX
+        // SAFETY: the static assert proves there exists a zero valued variant
+        unsafe impl ::zerocopy::FromZeros for $Name {
+            fn only_derive_is_allowed_to_implement_this_trait() {
+                static_assert!({
+                    let variants = [$($Name::$Variant),*];
+                    let mut found_a_zero = false;
+                    let mut i = 0;
+                    while i < variants.len() {
+                        found_a_zero |= variants[i] as $Raw == 0;
+                        i += 1;
+                    }
+                    found_a_zero
+                });
             }
         }
     };
@@ -748,7 +741,6 @@ macro_rules! fmod_typedef {
         $(#[$meta])*
         #[repr(transparent)]
         #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-        #[derive(::bytemuck::Pod, ::bytemuck::Zeroable)]
         #[derive(::zerocopy::FromBytes, ::zerocopy::IntoBytes)]
         #[derive(::zerocopy::KnownLayout, ::zerocopy::Immutable)]
         $vis struct $Name {
@@ -880,7 +872,6 @@ macro_rules! fmod_struct {
         fmod_struct! {
             #![fmod_no_pod, fmod_no_default]
             $(#[$meta])*
-            #[derive(::bytemuck::Pod, ::bytemuck::Zeroable)]
             #[derive(::zerocopy::FromBytes, ::zerocopy::IntoBytes)]
             #[derive(::zerocopy::Immutable)]
             $vis struct $Name = $Raw {
@@ -898,7 +889,8 @@ macro_rules! fmod_struct {
         fmod_struct! {
             #![fmod_no_pod, fmod_no_default]
             $(#[$meta])*
-            #[derive(::bytemuck::Zeroable, ::smart_default::SmartDefault)]
+            #[derive(::zerocopy::FromZeros)]
+            #[derive(::smart_default::SmartDefault)]
             $vis struct $Name$(<$lt>)? = $Raw {
                 $($body)*
             }

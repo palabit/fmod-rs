@@ -29,7 +29,6 @@ fmod_struct! {
 /// The default is a reverse orientation if interpreted as right-handed.
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, SmartDefault)]
-#[derive(::bytemuck::Pod, ::bytemuck::Zeroable)]
 #[derive(::zerocopy::FromBytes, ::zerocopy::IntoBytes)]
 #[derive(::zerocopy::KnownLayout, ::zerocopy::Immutable)]
 pub struct Orientation3d {
