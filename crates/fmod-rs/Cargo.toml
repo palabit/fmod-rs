@@ -57,15 +57,15 @@ _use_bundled_bindings_for_docs = ["dep:fmod-rs-sys-for-doc"]
 ## Enable all unstable feature flags.
 unstable = [
     "unstable_doc_cfg",
-    "unstable_extern_type",
+    # "unstable_extern_type",
     "unstable_read_buf",
     "unstable_trait_alias",
 ]
 
 ## Use `#[doc(cfg())]` to display cfg gates in documentation.
 unstable_doc_cfg = []
-## Use extern types for FMOD resource types. (Removes `impl Deref for Handle`)
-unstable_extern_type = []
+# ## Use extern types for FMOD resource types. (Removes `impl Deref for Handle`)
+# unstable_extern_type = []
 ## Use `Read::read_buf` to elide some otherwise unnecessary copies.
 unstable_read_buf = []
 ## Make `ChannelControlCallback` a proper trait alias.

@@ -1,5 +1,0 @@
-{
-    "rust-analyzer.cargo.features": [
-        "_ide_default",
-    ]
-}
