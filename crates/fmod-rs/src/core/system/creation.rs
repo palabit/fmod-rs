@@ -1,7 +1,10 @@
 use {
-    crate::file::{
-        userasynccancel_listen, userasyncread_listen, userclose_listen, useropen_listen,
-        userread_listen, userseek_listen, AsyncListenFileSystem,
+    crate::{
+        file::{
+            AsyncListenFileSystem, userasynccancel_listen, userasyncread_listen, userclose_listen,
+            useropen_listen, userread_listen, userseek_listen,
+        },
+        utils::SmallCString,
     },
     fmod::{raw::*, *},
     std::{ffi::CStr, fmt, marker::PhantomData, mem, ptr},
@@ -51,14 +54,17 @@ impl System {
     /// <span class="emoji">⚠️</span><span>
     /// Use of Mode::NonBlocking is currently not supported for Wasm.
     /// </span></div></div>
-    pub fn create_sound(&self, name: &CStr8, mode: Mode) -> Result<Handle<'_, Sound>> {
+    pub fn create_sound(&self, name: &str, mode: Mode) -> Result<Handle<'_, Sound>> {
         if mode & (Mode::OpenUser | Mode::OpenMemory | Mode::OpenMemoryPoint | Mode::OpenRaw)
             != Mode::default()
         {
-            whoops!("System::create_sound called with advanced mode {mode:?}; use create_sound_ex instead");
+            whoops!(
+                "System::create_sound called with advanced mode {mode:?}; use create_sound_ex instead"
+            );
             yeet!(Error::InvalidParam);
         }
 
+        let name = SmallCString::new(name)?;
         let mode = Mode::into_raw(mode);
         let exinfo = ptr::null_mut();
         let mut sound = ptr::null_mut();
@@ -137,15 +143,18 @@ impl System {
     ///
     /// If you need access to the extended options, use
     /// [`System::create_sound_ex`] instead and set [`Mode::CreateStream`].
-    pub fn create_stream(&self, name: &CStr8, mode: Mode) -> Result<Handle<'_, Sound>> {
+    pub fn create_stream(&self, name: &str, mode: Mode) -> Result<Handle<'_, Sound>> {
         if matches!(
             mode,
             Mode::OpenUser | Mode::OpenMemory | Mode::OpenMemoryPoint | Mode::OpenRaw
         ) {
-            whoops!("System::create_stream called with extended mode {mode:?}; use create_sound_ex instead");
+            whoops!(
+                "System::create_stream called with extended mode {mode:?}; use create_sound_ex instead"
+            );
             yeet!(Error::InvalidParam);
         }
 
+        let name = SmallCString::new(name)?;
         let mode = Mode::into_raw(mode);
         let exinfo = ptr::null_mut();
         let mut sound = ptr::null_mut();
@@ -201,7 +210,8 @@ impl System {
     /// All [ChannelGroup]s will initially output directly to the master
     /// [ChannelGroup] (See [System::get_master_channel_group]).[ChannelGroup]s
     /// can be re-parented this with [ChannelGroup::add_group].
-    pub fn create_channel_group(&self, name: &CStr8) -> Result<Handle<'_, ChannelGroup>> {
+    pub fn create_channel_group(&self, name: &str) -> Result<Handle<'_, ChannelGroup>> {
+        let name = SmallCString::new(name)?;
         let mut channel_group = ptr::null_mut();
         ffi!(FMOD_System_CreateChannelGroup(
             self.as_raw(),
@@ -221,7 +231,8 @@ impl System {
     ///   [SoundGroup::stop].
     /// - Playback behavior such as 'max audible', to limit playback of certain
     ///   types of Sounds. See [SoundGroup::set_max_audible].
-    pub fn create_sound_group(&self, name: &CStr8) -> Result<Handle<'_, SoundGroup>> {
+    pub fn create_sound_group(&self, name: &str) -> Result<Handle<'_, SoundGroup>> {
+        let name = SmallCString::new(name)?;
         let mut sound_group = ptr::null_mut();
         ffi!(FMOD_System_CreateSoundGroup(
             self.as_raw(),

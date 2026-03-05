@@ -5,7 +5,7 @@ use {
     fmod::{dsp::*, raw::*, *},
     paste::paste,
     std::{
-        mem::{offset_of, MaybeUninit},
+        mem::{MaybeUninit, offset_of},
         ops::Range,
         ptr,
     },
@@ -562,7 +562,7 @@ pub mod Flange {
 ///
 /// ```rust,no_run
 /// # let system = fmod::System::new()?;
-/// # let multiband = system.create_dsp_by_type(fmod::DspType::MultibandEq)?;
+/// # let mut multiband = system.create_dsp_by_type(fmod::DspType::MultibandEq)?;
 /// # let frequency = 5000.0;
 /// # let resonance = 1.0;
 /// // Configure a single band (band A) as a highpass (all other bands default to off).
@@ -570,8 +570,8 @@ pub mod Flange {
 /// // Cutoff frequency can be used the same as with the old effect.
 /// // Resonance can be applied by setting the 'Q' value of the new effect.
 /// multiband.set_parameter(fmod::dsp::MultibandEq::A::Filter, fmod::dsp::MultibandEq::Filter::Highpass12Db)?;
-/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Cutoff, frequency)?;
-/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Resonance, resonance)?;
+/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Frequency, frequency)?;
+/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Q, resonance)?;
 /// # Ok::<_, fmod::Error>(())
 /// ```
 #[deprecated = "Deprecated and will be removed in a future release."]
@@ -600,14 +600,14 @@ pub mod Highpass {
 ///
 /// ```rust,no_run
 /// # let system = fmod::System::new()?;
-/// # let multiband = system.create_dsp_by_type(fmod::DspType::MultibandEq)?;
+/// # let mut multiband = system.create_dsp_by_type(fmod::DspType::MultibandEq)?;
 /// # let frequency = 5000.0;
 /// // Configure a single band (band A) as a highpass (all other bands default to off).
 /// // 12dB roll-off to approximate the old effect curve.
 /// // Cutoff frequency can be used the same as with the old effect.
 /// // Resonance / 'Q' should remain at default 0.707.
-/// multiband.set_parameter(fmod::effect::MultibandEq::A::Filter, fmod::effect::MultibandEq::Filter::Highpass12Db)?;
-/// multiband.set_parameter(fmod::effect::MultibandEq::A::Cutoff, frequency)?;
+/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Filter, fmod::dsp::MultibandEq::Filter::Highpass12Db)?;
+/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Frequency, frequency)?;
 /// # Ok::<_, fmod::Error>(())
 /// ```
 #[deprecated = "Deprecated and will be removed in a future release."]
@@ -781,16 +781,16 @@ pub mod LoudnessMeter {
 ///
 /// ```rust,no_run
 /// # let system = fmod::System::new()?;
-/// # let multiband = system.create_dsp_by_type(fmod::DspType::MultibandEq)?;
+/// # let mut multiband = system.create_dsp_by_type(fmod::DspType::MultibandEq)?;
 /// # let frequency = 5000.0;
 /// # let resonance = 1.0;
 /// // Configure a single band (band A) as a highpass (all other bands default to off).
 /// // 24dB roll-off to approximate the old effect curve.
 /// // Cutoff frequency can be used the same as with the old effect.
 /// // Resonance can be applied by setting the 'Q' value of the new effect.
-/// multiband.set_parameter(fmod::effect::MultibandEq::A::Filter, fmod::effect::MultibandEq::Filter::Lowpass24Db)?;
-/// multiband.set_parameter(fmod::effect::MultibandEq::A::Cutoff, frequency)?;
-/// multiband.set_parameter(fmod::effect::MultibandEq::A::Resonance, resonance)?;
+/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Filter, fmod::dsp::MultibandEq::Filter::Lowpass24Db)?;
+/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Frequency, frequency)?;
+/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Q, resonance)?;
 /// # Ok::<_, fmod::Error>(())
 /// ```
 #[deprecated = "Deprecated and will be removed in a future release."]
@@ -819,15 +819,15 @@ pub mod Lowpass {
 ///
 /// ```rust,no_run
 /// # let system = fmod::System::new()?;
-/// # let multiband = system.create_dsp_by_type(fmod::DspType::MultibandEq)?;
+/// # let mut multiband = system.create_dsp_by_type(fmod::DspType::MultibandEq)?;
 /// # let frequency = 5000.0;
 /// # let resonance = 1.0;
 /// // Configure a single band (band A) as a highpass (all other bands default to off).
 /// // 24dB roll-off to approximate the old effect curve.
 /// // Cutoff frequency can be used the same as with the old effect.
 /// // Resonance / 'Q' should remain at default 0.707.
-/// multiband.set_parameter(fmod::effect::MultibandEq::A::Filter, fmod::effect::MultibandEq::Filter::Lowpass24Db)?;
-/// multiband.set_parameter(fmod::effect::MultibandEq::A::Cutoff, frequency)?;
+/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Filter, fmod::dsp::MultibandEq::Filter::Lowpass24Db)?;
+/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Frequency, frequency)?;
 /// # Ok::<_, fmod::Error>(())
 /// ```
 #[deprecated = "Deprecated and will be removed in a future release."]
@@ -977,27 +977,27 @@ pub mod MultibandEq {
     }
 
     band! { ($A:ident) => { paste! {
-        dsp_param! { MultibandEq =>
-            #[doc = "Band " $A ":"]
-            /// Used to interpret the behavior of the remaining parameters.
-            pub struct [<Band $A Filter>]([<FMOD_DSP_MULTIBAND_EQ_ $A _FILTER>]) -> Filter;
-        }
-        dsp_param! { MultibandEq =>
-            #[doc = "Band " $A ":"]
-            /// Significant frequency, cutoff [low/high pass, low/high shelf],
-            /// center [notch, peaking, band-pass], phase transition point [all-pass].
-            pub struct [<Band $A Frequency>]([<FMOD_DSP_MULTIBAND_EQ_ $A _FREQUENCY>]) -> f32;
-        }
-        dsp_param! { MultibandEq =>
-            #[doc = "Band " $A ":"]
-            /// Quality factor, resonance [low/high pass], bandwidth [notch, peaking, band-pass],
-            /// phase transition sharpness [all-pass], unused [low/high shelf].
-            pub struct [<Band $A Q>]([<FMOD_DSP_MULTIBAND_EQ_ $A _Q>]) -> f32;
-        }
-        dsp_param! { MultibandEq =>
-            #[doc = "Band " $A ":"]
-            /// Boost or attenuation in dB [peaking, high/low shelf only]. -30 to 30. Default = 0.
-            pub struct [<Band $A Gain>]([<FMOD_DSP_MULTIBAND_EQ_ $A _GAIN>]) -> f32;
+        #[doc = "Band " $A]
+        pub mod $A {
+            use super::*;
+            dsp_param! { MultibandEq =>
+                /// Used to interpret the behavior of the remaining parameters.
+                pub struct Filter([<FMOD_DSP_MULTIBAND_EQ_ $A _FILTER>]) -> super::Filter;
+            }
+            dsp_param! { MultibandEq =>
+                /// Significant frequency, cutoff [low/high pass, low/high shelf],
+                /// center [notch, peaking, band-pass], phase transition point [all-pass].
+                pub struct Frequency([<FMOD_DSP_MULTIBAND_EQ_ $A _FREQUENCY>]) -> f32;
+            }
+            dsp_param! { MultibandEq =>
+                /// Quality factor, resonance [low/high pass], bandwidth [notch, peaking, band-pass],
+                /// phase transition sharpness [all-pass], unused [low/high shelf].
+                pub struct Q([<FMOD_DSP_MULTIBAND_EQ_ $A _Q>]) -> f32;
+            }
+            dsp_param! { MultibandEq =>
+                /// Boost or attenuation in dB [peaking, high/low shelf only]. -30 to 30. Default = 0.
+                pub struct Gain([<FMOD_DSP_MULTIBAND_EQ_ $A _GAIN>]) -> f32;
+            }
         }
     }}}
 
@@ -1415,7 +1415,7 @@ pub mod Pan {
 ///
 /// ```rust,no_run
 /// # let system = fmod::System::new()?;
-/// # let multiband = system.create_dsp_by_type(fmod::DspType::MultibandEq)?;
+/// # let mut multiband = system.create_dsp_by_type(fmod::DspType::MultibandEq)?;
 /// # let center = 8000.0;
 /// # let bandwidth = 1.0;
 /// # let gain = 0.0;
@@ -1423,10 +1423,10 @@ pub mod Pan {
 /// // Center frequency can be used as with the old effect.
 /// // Bandwidth can be applied by setting the 'Q' value of the new effect.
 /// // Gain at the center frequency can be used the same as with the old effect.
-/// multiband.set_parameter(fmod::effect::MultibandEq::A::Filter, fmod::effect::MultibandEq::Filter::Peaking)?;
-/// multiband.set_parameter(fmod::effect::MultibandEq::A::Frequency, center)?;
-/// multiband.set_parameter(fmod::effect::MultibandEq::A::Q, bandwidth)?;
-/// multiband.set_parameter(fmod::effect::MultibandEq::A::Gain, gain)?;
+/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Filter, fmod::dsp::MultibandEq::Filter::Peaking)?;
+/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Frequency, center)?;
+/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Q, bandwidth)?;
+/// multiband.set_parameter(fmod::dsp::MultibandEq::A::Gain, gain)?;
 /// # Ok::<_, fmod::Error>(())
 /// ```
 #[deprecated = "Deprecated and will be removed in a future release."]

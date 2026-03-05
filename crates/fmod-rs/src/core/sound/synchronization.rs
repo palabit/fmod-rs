@@ -1,5 +1,5 @@
 use {
-    crate::utils::fmod_get_string,
+    crate::utils::{SmallCString, fmod_get_string},
     fmod::{raw::*, *},
     std::ptr,
 };
@@ -64,14 +64,15 @@ impl Sound {
     pub fn add_sync_point(
         &self,
         offset: Time,
-        name: Option<&CStr8>,
+        name: Option<&str>,
     ) -> Result<Handle<'static, SyncPoint>> {
+        let name = name.map(SmallCString::new).transpose()?;
         let mut point = ptr::null_mut();
         ffi!(FMOD_Sound_AddSyncPoint(
             self.as_raw(),
             offset.value,
             offset.unit.into_raw(),
-            name.map(|s| s.as_c_str().as_ptr()).unwrap_or(ptr::null()),
+            name.map_or(ptr::null(), |name| name.as_ptr()),
             &mut point,
         ))?;
         Ok(unsafe { Handle::from_raw(point) })

@@ -10,10 +10,7 @@
 //! https://www.fmod.com/legal
 /*============================================================================*/
 
-use {
-    fmod::cstr8,
-    fmod_examples::{media, sleep_ms, yeet, Buttons, Example},
-};
+use fmod_examples::{media, sleep_ms, yeet, Buttons, Example};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Note {
@@ -77,7 +74,7 @@ fn main() -> anyhow::Result<()> {
         // Create a channelgroup that the channels will play on. We can use this channelgroup as our clock reference.
         // It also means we can pause and pitch bend the channelgroup, without affecting the offsets of the delays, because the channelgroup clock
         // which the channels feed off, will be pausing and speeding up/slowing down and still keeping the children in sync.
-        let channel_group = system.create_channel_group(cstr8!("Parent"))?;
+        let channel_group = system.create_channel_group("Parent")?;
 
         // Play all the sounds at once! Space them apart with set delay though so that they sound like they play in order.
         let mut clock_start = 0;

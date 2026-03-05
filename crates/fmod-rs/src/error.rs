@@ -1,6 +1,6 @@
 use {
     fmod::{raw::*, *},
-    std::{error::Error as _, fmt, io, num::NonZeroI32},
+    std::{error::Error as _, ffi::CStr, fmt, io, num::NonZeroI32},
 };
 
 macro_rules! error_enum_struct {
@@ -251,7 +251,11 @@ impl std::error::Error for Error {
         // SAFETY: FMOD_ErrorString is a C `static` function which thus isn't
         // bindgen'd, but hand implemented in fmod-core-sys. As such, we're
         // 100% certain that it always returns valid nul-terminated ASCII.
-        unsafe { CStr8::from_ptr(FMOD_ErrorString(self.raw.into()) as _) }
+        unsafe {
+            CStr::from_ptr(FMOD_ErrorString(self.raw.into()))
+                .to_str()
+                .unwrap_unchecked()
+        }
     }
 }
 

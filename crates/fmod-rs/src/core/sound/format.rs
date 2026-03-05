@@ -1,5 +1,7 @@
 use {
-    crate::utils::{fmod_get_string, string_from_utf16be_lossy, string_from_utf16le_lossy},
+    crate::utils::{
+        SmallCString, fmod_get_string, string_from_utf16be_lossy, string_from_utf16le_lossy,
+    },
     fmod::{raw::*, *},
     std::{borrow::Cow, ffi::CStr, mem, ptr, slice},
 };
@@ -120,8 +122,8 @@ impl Sound {
     ///
     /// ```no_run
     /// # let system = fmod::System::new()?;
-    /// # let sound = system.create_sound(fmod::cstr8!("drumloop.wav"), fmod::Mode::Default)?;
-    /// # let channel = system.play_sound(&sound, None, false)?;
+    /// # let sound = system.create_sound("drumloop.wav", fmod::Mode::Default)?;
+    /// # let channel = system.play_sound(&sound, None)?;
     /// loop {
     ///     let tag = match sound.get_tag(None, -1) {
     ///         Err(fmod::Error::TagNotFound) => break,
@@ -140,11 +142,12 @@ impl Sound {
     /// ```
     // XXX: Is the lifetime of the returned tag until the sound is released?
     //     Or is it just until the next call to `get_tag` (needs to take &mut)?
-    pub fn get_tag(&self, name: Option<&CStr8>, index: i32) -> Result<Tag<'_>> {
+    pub fn get_tag(&self, name: Option<&str>, index: i32) -> Result<Tag<'_>> {
+        let name = name.map(SmallCString::new).transpose()?;
         let mut tag: FMOD_TAG = unsafe { mem::zeroed() };
         ffi!(FMOD_Sound_GetTag(
             self.as_raw(),
-            name.map_or(ptr::null(), |name| name.as_c_str().as_ptr()),
+            name.map_or(ptr::null(), |name| name.as_ptr()),
             index,
             &mut tag,
         ))?;

@@ -88,10 +88,7 @@ mod _glob_prevention {
 }
 
 #[doc(no_inline)]
-pub use {
-    crate::core::*,
-    cstr8::{CStr8, cstr8},
-};
+pub use crate::core::*;
 
 #[doc(inline)]
 pub use self::{error::*, handle::*};

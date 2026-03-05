@@ -1,5 +1,5 @@
 use {
-    crate::utils::fmod_get_string,
+    crate::utils::{SmallCString, fmod_get_string},
     fmod::{raw::*, *},
     std::time::Duration,
 };
@@ -13,7 +13,8 @@ impl System {
     ///
     /// Basic authentication is supported using `user:password@host:port` format
     /// e.g. `bob:sekrit123@www.fmod.com:8888`.
-    pub fn set_network_proxy(&self, proxy: &CStr8) -> Result {
+    pub fn set_network_proxy(&self, proxy: &str) -> Result {
+        let proxy = SmallCString::new(proxy)?;
         ffi!(FMOD_System_SetNetworkProxy(
             self.as_raw(),
             proxy.as_ptr() as _,

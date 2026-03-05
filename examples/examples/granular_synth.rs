@@ -57,12 +57,12 @@ if_streams! {{
     // Use some longer sounds, free and load them on the fly.
     // 2 streams active, double buffer them.
     static mut SOUNDS: [Option<fmod::Handle<'static, fmod::Sound>>; 2] = [const { None }; 2];
-    const SOUND_NAMES: [&fmod::CStr8; 3] = [media!("c.ogg"), media!("d.ogg"), media!("e.ogg")];
+    const SOUND_NAMES: [&str; 3] = [media!("c.ogg"), media!("d.ogg"), media!("e.ogg")];
 } else {
     // These sounds will be loaded into memory statically.
     // 6 sounds active, one for each wav.
     static mut SOUNDS: [Option<fmod::Handle<'static, fmod::Sound>>; 6] = [const { None }; 6];
-    const SOUND_NAMES: [&fmod::CStr8; 6] = [
+    const SOUND_NAMES: [&str; 6] = [
         media!("granular/truck_idle_off_01.wav"),
         media!("granular/truck_idle_off_02.wav"),
         media!("granular/truck_idle_off_03.wav"),

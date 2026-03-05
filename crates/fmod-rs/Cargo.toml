@@ -84,7 +84,6 @@ bytemuck = { version = "1.16.1", features = [
     "extern_crate_std",
     "min_const_generics",
 ] }
-cstr8 = "0.1.4"
 cool_asserts = "2.0.3"
 document-features = "0.2.8"
 parking_lot = "0.12.3"
@@ -94,6 +93,7 @@ zerocopy = { version = "0.8.14", features = ["std", "derive"] }
 
 log = { version = "0.4.21", optional = true }
 mint = { version = "0.5.9", optional = true }
+smallvec = { version = "1.15.1", features = ["const_generics", "union"] }
 
 [build-dependencies]
 build-rs.workspace = true

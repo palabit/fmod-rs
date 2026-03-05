@@ -27,8 +27,8 @@ fn main() -> anyhow::Result<()> {
         let sound5 = system.create_sound(media!("e.ogg"), fmod::Mode::LoopNormal)?;
         let sounds = [sound0, sound1, sound2, sound3, sound4, sound5];
 
-        let group_a = system.create_channel_group(fmod::cstr8!("Group A"))?;
-        let group_b = system.create_channel_group(fmod::cstr8!("Group B"))?;
+        let group_a = system.create_channel_group("Group A")?;
+        let group_b = system.create_channel_group("Group B")?;
         let master_group = system.get_master_channel_group()?;
 
         // Instead of being independent, set the group A and B to be children of the master group.

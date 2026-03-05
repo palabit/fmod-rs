@@ -2,7 +2,7 @@
 
 use {
     crate::utils::{catch_user_unwind, str_from_nonnull_unchecked},
-    fmod::{raw::*, *},
+    fmod::{raw::*, utils::SmallCString, *},
     std::{
         cfg_select,
         ffi::{c_char, c_int},
@@ -115,17 +115,24 @@ pub fn initialize_callback<D: DebugCallback>(flags: DebugFlags) -> Result {
     doc = doc_callout!(
         "FMOD.rs automatically initializes FMOD's logs to go to the log crate.",
         "Manually initializing FMOD debugging will override this behavior."))]
-pub fn initialize_file(flags: DebugFlags, file: &CStr8) -> Result {
+pub fn initialize_file(flags: DebugFlags, filename: &str) -> Result {
     // prevent racing System init
     let _lock = GLOBAL_SYSTEM_STATE.read();
 
     let mut result = Ok(());
     DEBUG_LAYER_INITIALIZED.call_once(|| {
+        let filename = match SmallCString::new(filename) {
+            Ok(filename) => filename,
+            Err(e) => {
+                result = Err(e);
+                return;
+            },
+        };
         result = ffi!(FMOD_Debug_Initialize(
             flags.into_raw(),
             DebugMode::File.into_raw(),
             None,
-            file.as_ptr() as _,
+            filename.as_ptr() as _,
         ));
     });
 

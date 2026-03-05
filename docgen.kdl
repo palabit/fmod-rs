@@ -52,7 +52,7 @@ let exinfo = fmod::CreateSoundEx::new()
     .default_frequency(44100)    // Playback rate of sound
     .format(SoundFormat::Pcm16); // Data format of sound
 
-let sound = system.create_sound_ex(cstr8!("./filepath.raw").as_bytes_with_nul(), Mode::OpenMemory, exinfo)?;
+let sound = system.create_sound_ex(c"./filepath.raw".as_bytes_with_nul(), Mode::OpenMemory, exinfo)?;
 // As FMOD is using the data stored at the buffer pointer as is, without copying it into its own buffers, the memory cannot be freed until after the Sound handle is released
 ```
 "#
@@ -72,7 +72,7 @@ let sound = system.create_sound_ex(ptr::null(), Mode::OpenUser, exinfo)?;
 "#
     replace "(?s)``````````cpp\nFMOD::Sound \\*sound;.*?sound->readData.*?``````````" r#"
 ```rust,ignore
-let sound = system.create_sound(cstr8!("drumloop.wav"), Mode::OpenOnly)?;
+let sound = system.create_sound("drumloop.wav", Mode::OpenOnly)?;
 let length = sound.get_length(TimeUnit::RawBytes)?;
 
 let mut buffer = vec![0; length as usize];

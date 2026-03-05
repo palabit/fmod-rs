@@ -1,10 +1,11 @@
 use {
     fmod::{Error, Result},
+    smallvec::SmallVec,
     std::{
         borrow::Cow,
-        ffi::c_char,
-        ffi::CStr,
+        ffi::{CStr, c_char},
         mem::{self, MaybeUninit},
+        ops::Deref,
         panic::AssertUnwindSafe,
         ptr,
     },
@@ -154,6 +155,30 @@ where
 
 pub unsafe fn str_from_nonnull_unchecked<'a>(ptr: ptr::NonNull<c_char>) -> &'a str {
     CStr::from_ptr(ptr.as_ptr()).to_str().unwrap_unchecked()
+}
+
+pub struct SmallCString {
+    buf: SmallVec<[u8; 1024]>,
+}
+
+impl SmallCString {
+    pub fn new(s: &str) -> Result<Self> {
+        if s.contains('\0') {
+            yeet!(Error::InvalidString);
+        }
+        let mut buf = SmallVec::from_slice(s.as_bytes());
+        buf.push(0);
+        Ok(Self { buf })
+    }
+}
+
+impl Deref for SmallCString {
+    type Target = CStr;
+
+    fn deref(&self) -> &CStr {
+        // SAFETY: the buffer is nul-terminated by construction
+        unsafe { CStr::from_ptr(self.buf.as_ptr() as _) }
+    }
 }
 
 pub unsafe fn fmod_get_string(

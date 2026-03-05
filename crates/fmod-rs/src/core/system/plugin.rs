@@ -1,10 +1,11 @@
-use fmod::{raw::*, *};
+use fmod::{raw::*, utils::SmallCString, *};
 
 /// # Plugin support.
 impl System {
     /// Specify a base search path for plugins so they can be placed somewhere
     /// else than the directory of the main executable.
-    pub fn set_plugin_path(&self, path: &CStr8) -> Result {
+    pub fn set_plugin_path(&self, path: &str) -> Result {
+        let path = SmallCString::new(path)?;
         ffi!(FMOD_System_SetPluginPath(self.as_raw(), path.as_ptr() as _))?;
         Ok(())
     }
@@ -22,7 +23,8 @@ impl System {
         /// numbers represent less importance.
         ///
         /// The format of the plugin is dependant on the operating system.
-        pub fn load_plugin(&self, filename: &CStr8, priority: u32) -> Result<PluginHandle> {
+        pub fn load_plugin(&self, filename: &str, priority: u32) -> Result<PluginHandle> {
+            let filename = SmallCString::try_from(filename)?;
             let mut handle = PluginHandle::default();
             ffi!(FMOD_System_LoadPlugin(
                 self.as_raw(),

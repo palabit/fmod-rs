@@ -50,10 +50,10 @@ fn main() -> anyhow::Result<()> {
         system.init(32, fmod::InitFlags::Normal)?;
 
         // Create a new channel group to hold the convolution DSP unit
-        let mut reverb_group = system.create_channel_group(fmod::cstr8!("reverb"))?;
+        let mut reverb_group = system.create_channel_group("reverb")?;
 
         // Create a new channel group to hold all the channels and process the dry path
-        let main_group = system.create_channel_group(fmod::cstr8!("main"))?;
+        let main_group = system.create_channel_group("main")?;
 
         // Create the convultion DSP unit and set it as the tail of the channel group
         let mut reverb_unit = system.create_dsp_by_type(fmod::DspType::ConvolutionReverb)?;

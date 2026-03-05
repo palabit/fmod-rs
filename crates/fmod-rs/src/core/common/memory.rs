@@ -4,7 +4,7 @@ use {
     crate::utils::str_from_nonnull_unchecked,
     fmod::{raw::*, *},
     std::{
-        alloc::{alloc, dealloc, realloc, Layout},
+        alloc::{Layout, alloc, dealloc, realloc},
         ffi::{c_char, c_uint, c_void},
         mem::{self, MaybeUninit},
         ptr,
