@@ -19,8 +19,10 @@
 //!    for example, 48000 samples per second if FMOD is initialized to 48khz output.
 //!  * Output samples are calculated from source samples with a simple
 //!    source->output sample rate conversion. i.e.
-//!         sound_length *= output_rate
-//!         sound_length /= sound_frequency
+//!    ```
+//!    sound_length *= output_rate
+//!    sound_length /= sound_frequency
+//!    ```
 //!  * When the first sound finishes, the second one should have automatically
 //!    started. This is a good oppurtunity to queue up the next sound. Repeat
 //!    step 2.

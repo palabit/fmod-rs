@@ -65,7 +65,7 @@ fn main() -> anyhow::Result<()> {
 
         // main loop
         let mut listenerflag = true;
-        let mut listenerpos = fmod::Vector::new(0.0, 0.0, -1.0 * DISTANCE_FACTOR);
+        let mut listenerpos = fmod::Vector::new(0.0, 0.0, -DISTANCE_FACTOR);
         let mut t = 0.0_f32;
         let mut lastpos = fmod::Vector::new(0.0, 0.0, 0.0);
         while !example.btn_press(Buttons::Quit) {
