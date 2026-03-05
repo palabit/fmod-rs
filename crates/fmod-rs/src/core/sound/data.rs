@@ -74,11 +74,9 @@ impl Sound {
     /// pieces), rather than playing and capturing it, or loading the whole file
     /// at once and having to [`Sound::lock`] / [`Sound::unlock`] the data.
     ///
-    /// <div class="item-info"><div class="stab" style="white-space:normal;font-size:inherit">
-    /// <span class="emoji">🦀</span><span>
-    /// FMOD.rs returns `Ok(0)` on EOF, matching the [`Read`](io::Read) trait,
-    /// whereas raw FMOD returns `Error::FileEof`.
-    /// </span></div></div>
+    #[doc = doc_callout!(
+        "FMOD.rs returns `Ok(0)` on EOF, matching the [`Read`](io::Read) trait,",
+        "whereas raw FMOD returns `Error::FileEof`.")]
     ///
     /// As a non streaming sound reads and decodes the whole file then closes it
     /// upon calling [`System::create_sound`], [`Sound::read_data`] will then
@@ -134,10 +132,8 @@ impl Sound {
 
     /// Gives access to a portion or all the sample data of a sound for direct manipulation.
     ///
-    /// <div class="item-info"><div class="stab" style="white-space:normal;font-size:inherit">
-    /// <span class="emoji">🦀</span><span>
-    /// Dropping `SoundReadGuard` will call `Sound::unlock` and unlock the data.
-    /// </span></div></div>
+    #[doc = doc_callout!(
+        "Dropping `SoundReadGuard` will call `Sound::unlock` and unlock the data.")]
     ///
     /// With this function you get access to the raw audio data. If the data is
     /// 8, 16, 24 or 32bit PCM data, mono or stereo data, you must take this

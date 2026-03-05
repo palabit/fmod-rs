@@ -28,6 +28,17 @@ macro_rules! ix {
     };
 }
 
+macro_rules! doc_callout {
+    ($text0:literal $(, $text1:literal)* $(,)?) => {
+        concat!(
+            "<div class=\"warning fmod-rs-callout\">\n\n",
+            $text0,
+            $(" ", $text1,)*
+            "\n\n</div>",
+        )
+    };
+}
+
 macro_rules! cfg_match {
     () => {};
     (_ => { $($tt:tt)* } $(,)?) => { $($tt)* };

@@ -81,3 +81,4 @@ build-rs.workspace = true
 [package.metadata.docs.rs]
 all-features = true
 targets = []
+rustdoc-args = ["--extend-css", "crates/fmod-rs/rustdoc.css"]

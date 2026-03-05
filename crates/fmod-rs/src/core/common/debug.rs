@@ -32,14 +32,9 @@ static DEBUG_LAYER_INITIALIZED: Once = Once::new();
 ///
 #[cfg_attr(
     feature = "log",
-    doc = r#"
-<div class="item-info"><div class="stab" style="white-space:normal;font-size:inherit">
-<span class="emoji">🦀</span><span>
-FMOD.rs automatically initializes FMOD's logs to go to the log crate. Manually
-initializing FMOD debugging will override this behavior.
-</span></div></div>
-"#
-)]
+    doc = doc_callout!(
+        "FMOD.rs automatically initializes FMOD's logs to go to the log crate.",
+        "Manually initializing FMOD debugging will override this behavior."))]
 pub fn initialize(flags: DebugFlags) -> Result {
     // prevent racing System init
     let _lock = GLOBAL_SYSTEM_STATE.read();
@@ -77,14 +72,9 @@ pub fn initialize(flags: DebugFlags) -> Result {
 ///
 #[cfg_attr(
     feature = "log",
-    doc = r#"
-<div class="item-info"><div class="stab" style="white-space:normal;font-size:inherit">
-<span class="emoji">🦀</span><span>
-FMOD.rs automatically initializes FMOD's logs to go to the log crate. Manually
-initializing FMOD debugging will override this behavior.
-</span></div></div>
-"#
-)]
+    doc = doc_callout!(
+        "FMOD.rs automatically initializes FMOD's logs to go to the log crate.",
+        "Manually initializing FMOD debugging will override this behavior."))]
 pub fn initialize_callback<D: DebugCallback>(flags: DebugFlags) -> Result {
     // prevent racing System init
     let _lock = GLOBAL_SYSTEM_STATE.read();
@@ -121,14 +111,9 @@ pub fn initialize_callback<D: DebugCallback>(flags: DebugFlags) -> Result {
 ///
 #[cfg_attr(
     feature = "log",
-    doc = r#"
-<div class="item-info"><div class="stab" style="white-space:normal;font-size:inherit">
-<span class="emoji">🦀</span><span>
-FMOD.rs automatically initializes FMOD's logs to go to the log crate. Manually
-initializing FMOD debugging will override this behavior.
-</span></div></div>
-"#
-)]
+    doc = doc_callout!(
+        "FMOD.rs automatically initializes FMOD's logs to go to the log crate.",
+        "Manually initializing FMOD debugging will override this behavior."))]
 pub fn initialize_file(flags: DebugFlags, file: &CStr8) -> Result {
     // prevent racing System init
     let _lock = GLOBAL_SYSTEM_STATE.read();

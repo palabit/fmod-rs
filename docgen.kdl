@@ -18,11 +18,12 @@ job "core-guide.html" "core/README.md" {
 
     // FMOD.rs notes
     insert before="### Creating a Sound from memory" r#"
-<div class="item-info"><div class="stab" style="white-space:normal;font-size:inherit">
-<span class="emoji">🦀</span><span>
-<code>System::create_sound_ex</code> is <code>unsafe</code> to use due to its number of vastly
-different modes. FMOD.rs does not yet expose a safe interface for advanced sound creation modes.
-</span></div></div>
+<div class="warning fmod-rs-callout">
+
+`System::create_sound_ex` is `unsafe` to use due to its number of vastly different modes.
+FMOD.rs does not yet expose a safe interface for advanced sound creation modes.
+
+</div>
 
 "#
     replace "(?s)``````````cpp\nFMOD::Sound \\*sound;.*?, Mode::OpenMemory, .*?``````````" r#"
@@ -94,42 +95,48 @@ job "platforms-win.html" "platform/Windows.md" {
 
     // FMOD.rs notes
     insert before="### COM" r#"
-<div class="item-info"><div class="stab" style="white-space:normal;font-size:inherit">
-<span class="emoji">🦀</span><span>
-The conventional FMOD API installation path is
-<code>%ProgramFiles(x86)%\FMOD&nbsp;SoundSystem\FMOD&nbsp;Studio&nbsp;API&nbsp;Windows</code>
-and FMOD.rs will add the lib directories within to the link lib search path if
-the <code>link-search</code> feature is enabled.
-</span></div></div>
+<div class="warning fmod-rs-callout">
 
-<div class="item-info"><div class="stab" style="white-space:normal;font-size:inherit">
-<span class="emoji">🦀</span><span>
+The conventional FMOD API installation path is
+`%ProgramFiles(x86)%\FMOD SoundSystem\FMOD Studio API Windows`
+and FMOD.rs will add the lib directories within to the link lib search path if
+the `link-search` feature is enabled.
+
+</div>
+
+<div class="warning fmod-rs-callout">
+
 FMOD.rs links the logging library in development mode builds and the production
 library in release mode builds.
-</span></div></div>
 
-<div class="item-info"><div class="stab" style="white-space:normal;font-size:inherit">
-<span class="emoji">🦀</span><span>
-If this isn't what you want, it can be <a href="https://doc.rust-lang.org/cargo/reference/build-scripts.html#overriding-build-scripts">overridden</a>.
-</span></div></div>
+</div>
+
+<div class="warning fmod-rs-callout">
+
+If this isn't what you want, it can be [overridden](https://doc.rust-lang.org/cargo/reference/build-scripts.html#overriding-build-scripts).
+
+</div>
 
 "#
     insert before="To ensure correct behavior FMOD assumes" r#"
-<div class="item-info"><div class="stab" style="white-space:normal;font-size:inherit">
-<span class="emoji">🦀</span><span>
+<div class="warning fmod-rs-callout">
+
 FMOD.rs does not handle COM initialization specially (it relies on the above
 on-demand initialization done by the FMOD Engine), so if you want to silence
 this warning, you will need to initialize COM yourself.
-</span></div></div>
+
+</div>
 
 "#
     insert before="#### ASIO and C#" r#"
-<div class="item-info"><div class="stab" style="white-space:normal;font-size:inherit">
-<span class="emoji">🦀</span><span>
+
+<div class="warning fmod-rs-callout">
+
 FMOD.rs does not attempt to restrict the first use of these functions to the UI
 thread. This is a concession to cross-platform usability rather than a niche
 theoretical concern on an out-of-mainstream-support Windows.
-</span></div></div>
+
+</div>
 
 "#
 }

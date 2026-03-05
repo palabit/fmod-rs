@@ -1,0 +1,9 @@
+.content .docblock .warning.fmod-rs-callout {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.content .docblock .warning.fmod-rs-callout::before {
+    content: "🦀";
+    margin: -0.25em 0 0 -0.25em;
+}
