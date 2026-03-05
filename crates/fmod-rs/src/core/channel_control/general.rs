@@ -1,6 +1,6 @@
 use {
     fmod::{raw::*, *},
-    std::{ffi::c_void, ptr},
+    std::{cfg_select, ffi::c_void, ptr},
 };
 
 // We make the potentially dangerous assumption that for the FMOD_CHANNELCONTROL
@@ -37,15 +37,15 @@ impl ChannelControl {
     }
 }
 
-cfg_match! {
-    (feature = "unstable_trait_alias") => {
+cfg_select! {
+    feature = "unstable_trait_alias" => {
         /// Callback for Channel and ChannelGroup notifications.
         ///
         /// Callbacks are called from the game thread when set from the Core API or
         /// Studio API in synchronous mode, and from the Studio Update Thread when in
         /// default / async mode.
         pub trait ChannelControlCallback = ChannelCallback + ChannelGroupCallback;
-    },
+    }
     _ => {
         /// Callback for Channel and ChannelGroup notifications.
         ///

@@ -4,6 +4,7 @@ use {
     crate::utils::catch_user_unwind,
     fmod::{raw::*, *},
     std::{
+        cfg_select,
         ffi::CStr,
         ffi::{c_char, c_void},
         io::{self, Read, Write},
@@ -125,20 +126,18 @@ impl FileBuffer<'_> {
     /// traits should succeed if the read itself was successful, and a success
     /// gets automatically translated to [`Error::FileEof`] when appropriate.
     pub fn fill_from(&mut self, reader: &mut (impl Read + ?Sized)) -> io::Result<()> {
-        let result;
-
-        #[cfg(feature = "unstable_read_buf")]
-        {
-            let mut buf = io::BorrowedBuf::from(self.unfilled());
-            result = reader.read_buf_exact(buf.unfilled());
-            let written = buf.filled().len();
-            unsafe { self.advance(written) };
+        let result = cfg_select! {
+            feature = "unstable_read_buf" => {{
+                let mut buf = io::BorrowedBuf::from(self.unfilled());
+                let result = reader.read_buf_exact(buf.unfilled());
+                let written = buf.filled().len();
+                unsafe { self.advance(written) };
+                result
+            }}
+            _ => {
+                io::copy(reader, self)
+            }
         };
-
-        #[cfg(not(feature = "unstable_read_buf"))]
-        {
-            result = io::copy(reader, self);
-        }
 
         match result {
             Ok(_) => Ok(()),

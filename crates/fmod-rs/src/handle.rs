@@ -3,7 +3,7 @@
 use {
     parking_lot::RwLock,
     std::{
-        fmt,
+        cfg_select, fmt,
         marker::PhantomData,
         mem::ManuallyDrop,
         ops::{Deref, DerefMut},
@@ -22,28 +22,27 @@ use {
 /// - `>= 1` indicates that systems exist, and creating another is unsafe.
 pub(crate) static GLOBAL_SYSTEM_STATE: RwLock<usize> = RwLock::new(0);
 
-#[cfg(feature = "unstable_extern_type")]
-pub(crate) use std::marker::{MetaSized, PointeeSized};
+cfg_select! {
+    feature = "unstable_extern_type" => {
+        pub(crate) use std::marker::{MetaSized, PointeeSized};
+    }
+    doc => {
+        /// Shim for [`std::marker::PointeeSized`] bounds on stable.
+        pub trait PointeeSized {}
+        /// Shim for [`std::marker::MetaSized`] bounds on stable.
+        pub trait MetaSized {}
 
-#[cfg(all(doc, not(feature = "unstable_extern_type")))]
-/// Shim for [`std::marker::PointeeSized`] bounds on stable.
-pub trait PointeeSized {}
+        impl<T: ?Sized> PointeeSized for T {}
+        impl<T: ?Sized> MetaSized for T {}
+    }
+    _ => {
+        pub(crate) trait PointeeSized {}
+        pub(crate) trait MetaSized {}
 
-#[cfg(all(not(doc), not(feature = "unstable_extern_type")))]
-pub(crate) trait PointeeSized {}
-
-#[cfg(not(feature = "unstable_extern_type"))]
-impl<T: ?Sized> PointeeSized for T {}
-
-#[cfg(all(doc, not(feature = "unstable_extern_type")))]
-/// Shim for [`std::marker::MetaSized`] bounds on stable.
-pub trait MetaSized {}
-
-#[cfg(all(not(doc), not(feature = "unstable_extern_type")))]
-pub(crate) trait MetaSized {}
-
-#[cfg(not(feature = "unstable_extern_type"))]
-impl<T: ?Sized> MetaSized for T {}
+        impl<T: ?Sized> PointeeSized for T {}
+        impl<T: ?Sized> MetaSized for T {}
+    }
+}
 
 pub(crate) use MetaSized as DerefSized;
 
@@ -172,10 +171,7 @@ impl<'a, T: ?Sized + PointeeSized + Resource> Handle<'a, T> {
 
     pub(crate) unsafe fn new(raw: *mut T::Raw) -> Self {
         let this = Self::from_raw(raw);
-
-        #[cfg(feature = "log")]
-        log::trace!("Created {this:?}");
-
+        log!(trace, "Created {this:?}");
         this
     }
 
@@ -271,8 +267,7 @@ impl<T: ?Sized + PointeeSized + Resource> HandleExt<T> for Option<Handle<'_, T>>
             None => yeet!(fmod::Error::InvalidHandle),
         };
         unsafe { T::release(this) }?;
-        #[cfg(feature = "log")]
-        log::trace!("Released {this:?}");
+        log!(trace, "Released {this:?}");
         Ok(())
     }
 

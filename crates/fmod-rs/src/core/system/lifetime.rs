@@ -1,7 +1,7 @@
 use {
     fmod::{raw::*, *},
     parking_lot::RwLockUpgradableReadGuard,
-    std::{hint::unreachable_unchecked, ptr},
+    std::{cfg_select, hint::unreachable_unchecked, ptr},
 };
 
 /// # Lifetime management.
@@ -25,9 +25,11 @@ impl System {
         // guard against creating multiple systems
         let system_exists = GLOBAL_SYSTEM_STATE.upgradable_read();
         if *system_exists != 0 {
-            whoops!("Only one FMOD system may be created safely. \
+            whoops!(
+                "Only one FMOD system may be created safely. \
                 Read the docs on `System::new_unchecked` if you actually mean to create more than one system. \
-                Note: constructing a studio system automatically creates a core system for you!");
+                Note: constructing a studio system automatically creates a core system for you!"
+            );
             yeet!(Error::Initialized);
         }
 
@@ -117,13 +119,13 @@ impl System {
     /// [ghost-cell]: https://lib.rs/crates/ghost-cell
     /// [qcell's `LCell`]: https://lib.rs/crates/qcell
     pub unsafe fn new_unchecked() -> Result<Handle<'static, Self>> {
-        cfg_match! {
-            (debug_assertions) => {
+        cfg_select! {
+            debug_assertions => {
                 let Some(mut system_count) = GLOBAL_SYSTEM_STATE.try_write() else {
                     // NB: will assert_unsafe_precondition!(false)
                     unreachable_unchecked()
                 };
-            },
+            }
             _ => {
                 let mut system_count = unsafe {
                     &mut *GLOBAL_SYSTEM_STATE.data_ptr()

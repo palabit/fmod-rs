@@ -3,7 +3,8 @@ use {
     fmod::{raw::*, *},
     std::{
         borrow::Cow,
-        ffi::{c_char, c_void, CStr},
+        cfg_select,
+        ffi::{CStr, c_char, c_void},
         marker::PhantomData,
         mem::ManuallyDrop,
     },
@@ -515,22 +516,38 @@ impl Drop for DspLock<'_> {
     }
 }
 
-#[cfg(all(not(doc), windows))]
-/// A raw OS thread handle.
-pub type SystemThreadHandle = std::os::windows::io::RawHandle;
-#[cfg(all(not(doc), unix))]
-/// A raw OS thread handle.
-pub type SystemThreadHandle = std::os::unix::thread::RawPthread;
+cfg_select! {
+    doc => {
+        type _SystemThreadHandle = unknown::SystemThreadHandle;
+        mod unknown {
+            #[doc(hidden)]
+            pub struct SystemThreadHandle(*mut ());
+        }
+    }
+    windows => {
+        type _SystemThreadHandle = std::os::windows::io::RawHandle;
+    }
+    unix => {
+        type _SystemThreadHandle = std::os::unix::thread::RawPthread;
+    }
+    _ => {
+        type _SystemThreadHandle = *mut UnknownOpaqueType;
+        opaque_type!(struct UnknownOpaqueType);
+    }
+}
 
 /// A raw OS thread handle.
 ///
 /// - Unix: [`std::os::unix::thread::RawPthread`]
 /// - Windows: [`std::os::windows::io::RawHandle`]
-#[cfg(doc)]
-#[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(any(unix, windows))))]
-pub type SystemThreadHandle = unknown::SystemThreadHandle;
-
-#[cfg(doc)]
-mod unknown {
-    pub struct SystemThreadHandle(*mut ());
-}
+/// - Other: `*mut {unknown}`
+///
+#[cfg_attr(
+    not(unix),
+    doc = "[`std::os::unix::thread::RawPthread`]: https://doc.rust-lang.org/stable/std/os/unix/thread/type.RawPthread.html"
+)]
+#[cfg_attr(
+    not(windows),
+    doc = "[`std::os::windows::io::RawHandle`]: https://doc.rust-lang.org/stable/std/os/windows/io/type.RawHandle.html"
+)]
+pub type SystemThreadHandle = _SystemThreadHandle;

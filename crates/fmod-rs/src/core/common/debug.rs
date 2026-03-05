@@ -4,6 +4,7 @@ use {
     crate::utils::{catch_user_unwind, str_from_nonnull_unchecked},
     fmod::{raw::*, *},
     std::{
+        cfg_select,
         ffi::{c_char, c_int},
         ptr,
         sync::Once,
@@ -153,14 +154,18 @@ pub fn initialize_log() {
 pub(crate) unsafe fn initialize_default() {
     let mut result = Ok(());
     DEBUG_LAYER_INITIALIZED.call_once(|| {
-        #[cfg(feature = "log")]
-        {
-            result = ffi!(FMOD_Debug_Initialize(
-                DebugViaRust::ideal_debug_flags().into_raw(),
-                DebugMode::Callback.into_raw(),
-                Some(debug_callback::<DebugViaRust>),
-                ptr::null(),
-            ));
+        cfg_select! {
+            feature = "log" => {
+                result = ffi!(FMOD_Debug_Initialize(
+                    DebugViaRust::ideal_debug_flags().into_raw(),
+                    DebugMode::Callback.into_raw(),
+                    Some(debug_callback::<DebugViaRust>),
+                    ptr::null(),
+                ));
+            }
+            _ => {
+                result = Err(Error::Unsupported);
+            }
         }
     });
 
@@ -269,112 +274,113 @@ fmod_flags! {
 
 // -------------------------------------------------------------------------------------------------
 
-#[cfg(feature = "log")]
-/// A [`DebugCallback`] sink that hooks up FMOD debug messages into [log].
-///
-/// <table>
-/// <tr> <th>FMOD Debug Flag</th> <th>Log Level</th> <th>Log Target</th>   </tr>
-/// <tr> <td>TypeMemory</td>      <td>Trace</td>     <td>fmod::memory</td> </tr>
-/// <tr> <td>TypeFile</td>        <td>Trace</td>     <td>fmod::file</td>   </tr>
-/// <tr> <td>TypeCodec</td>       <td>Trace</td>     <td>fmod::codec</td>  </tr>
-/// <tr> <td>TypeTrace</td>       <td>Trace</td>     <td>fmod::trace</td>  </tr>
-/// <tr> <td>LevelLog</td>        <td>Info</td>      <td>fmod</td>         </tr>
-/// <tr> <td>LevelWarning</td>    <td>Warn</td>      <td>fmod</td>         </tr>
-/// <tr> <td>LevelError</td>      <td>Error</td>     <td>fmod</td>         </tr>
-/// </table>
-///
-/// The `Display*` flags are ignored and left to the decision of the logger.
-///
-/// Additionally, FMOD.rs traces handle creation/release in target fmod::handle.
-pub enum DebugViaRust {}
+cfg_select! {
+    feature = "log" => {
+        /// A [`DebugCallback`] sink that hooks up FMOD debug messages into [log].
+        ///
+        /// <table>
+        /// <tr> <th>FMOD Debug Flag</th> <th>Log Level</th> <th>Log Target</th>   </tr>
+        /// <tr> <td>TypeMemory</td>      <td>Trace</td>     <td>fmod::memory</td> </tr>
+        /// <tr> <td>TypeFile</td>        <td>Trace</td>     <td>fmod::file</td>   </tr>
+        /// <tr> <td>TypeCodec</td>       <td>Trace</td>     <td>fmod::codec</td>  </tr>
+        /// <tr> <td>TypeTrace</td>       <td>Trace</td>     <td>fmod::trace</td>  </tr>
+        /// <tr> <td>LevelLog</td>        <td>Info</td>      <td>fmod</td>         </tr>
+        /// <tr> <td>LevelWarning</td>    <td>Warn</td>      <td>fmod</td>         </tr>
+        /// <tr> <td>LevelError</td>      <td>Error</td>     <td>fmod</td>         </tr>
+        /// </table>
+        ///
+        /// The `Display*` flags are ignored and left to the decision of the logger.
+        ///
+        /// Additionally, FMOD.rs traces handle creation/release in target fmod::handle.
+        pub enum DebugViaRust {}
 
-#[cfg(feature = "log")]
-impl DebugCallback for DebugViaRust {
-    fn log(
-        flags: DebugFlags,
-        file: Option<&str>,
-        line: i32,
-        func: Option<&str>,
-        message: Option<&str>,
-    ) -> Result {
-        let mut log = log::Record::builder();
-        let message = message.unwrap_or_default();
-        log.file(file).line(Some(line as u32)).module_path(func);
+        impl DebugCallback for DebugViaRust {
+            fn log(
+                flags: DebugFlags,
+                file: Option<&str>,
+                line: i32,
+                func: Option<&str>,
+                message: Option<&str>,
+            ) -> Result {
+                let mut log = log::Record::builder();
+                let message = message.unwrap_or_default();
+                log.file(file).line(Some(line as u32)).module_path(func);
 
-        // extract level from flags
-        if flags.is_set(DebugFlags::LevelLog) {
-            log.level(log::Level::Info);
-        } else if flags.is_set(DebugFlags::LevelWarning) {
-            log.level(log::Level::Warn);
-        } else if flags.is_set(DebugFlags::LevelError) {
-            log.level(log::Level::Error);
-        } else {
-            // no explicit level set, so leave the default (Log/Info)
+                // extract level from flags
+                if flags.is_set(DebugFlags::LevelLog) {
+                    log.level(log::Level::Info);
+                } else if flags.is_set(DebugFlags::LevelWarning) {
+                    log.level(log::Level::Warn);
+                } else if flags.is_set(DebugFlags::LevelError) {
+                    log.level(log::Level::Error);
+                } else {
+                    // no explicit level set, so leave the default (Log/Info)
+                }
+
+                // extract target from flags
+                if flags.is_set(DebugFlags::TypeMemory) {
+                    log.level(log::Level::Trace).target("fmod::memory");
+                } else if flags.is_set(DebugFlags::TypeFile) {
+                    log.level(log::Level::Trace).target("fmod::file");
+                } else if flags.is_set(DebugFlags::TypeCodec) {
+                    log.level(log::Level::Trace).target("fmod::codec");
+                } else if flags.is_set(DebugFlags::TypeTrace) {
+                    log.level(log::Level::Trace).target("fmod::trace");
+                } else {
+                    // no explicit type set, so we use a generic fmod target
+                    log.target("fmod");
+                };
+
+                log::logger().log(&log.args(format_args!("{message}")).build());
+                Ok(())
+            }
         }
 
-        // extract target from flags
-        if flags.is_set(DebugFlags::TypeMemory) {
-            log.level(log::Level::Trace).target("fmod::memory");
-        } else if flags.is_set(DebugFlags::TypeFile) {
-            log.level(log::Level::Trace).target("fmod::file");
-        } else if flags.is_set(DebugFlags::TypeCodec) {
-            log.level(log::Level::Trace).target("fmod::codec");
-        } else if flags.is_set(DebugFlags::TypeTrace) {
-            log.level(log::Level::Trace).target("fmod::trace");
-        } else {
-            // no explicit type set, so we use a generic fmod target
-            log.target("fmod");
-        };
+        impl DebugViaRust {
+            /// Create [DebugFlags] enabling only debug logging which is enabled by
+            /// the current logger.
+            ///
+            /// FMOD's default filter is [DebugFlags::LevelLog], which is equivalent
+            /// to an env filter of `fmod=INFO` when using [`DebugViaRust`].
+            /// Enabling the `fmod::memory`/`fmod::file`/`fmod::codec` targets should
+            /// only be done when debugging specific issues that require tracing that
+            /// area's execution; these are truly verbose trace level logging targets.
+            pub fn ideal_debug_flags() -> DebugFlags {
+                use log::{Level, log_enabled};
+                let mut debug_flags = DebugFlags::LevelNone;
 
-        log::logger().log(&log.args(format_args!("{message}")).build());
-        Ok(())
+                if log_enabled!(target: "fmod", Level::Error) {
+                    debug_flags = DebugFlags::LevelError;
+                }
+                if log_enabled!(target: "fmod", Level::Warn) {
+                    debug_flags = DebugFlags::LevelWarning;
+                }
+                if log_enabled!(target: "fmod", Level::Info) {
+                    debug_flags = DebugFlags::LevelLog;
+                }
+                if log_enabled!(target: "fmod::trace", Level::Trace) {
+                    debug_flags |= DebugFlags::TypeTrace;
+                }
+                if log_enabled!(target: "fmod::memory", Level::Trace) {
+                    debug_flags |= DebugFlags::TypeMemory;
+                }
+                if log_enabled!(target: "fmod::file", Level::Trace) {
+                    debug_flags |= DebugFlags::TypeFile;
+                }
+                if log_enabled!(target: "fmod::codec", Level::Trace) {
+                    debug_flags |= DebugFlags::TypeCodec;
+                }
+
+                debug_flags
+            }
+        }
+
+        fn handle_init_failure(error: Error) {
+            match error {
+                Error::Unsupported => log::info!("FMOD debug disabled"),
+                error => whoops!("Error during FMOD debug initialization: {error}"),
+            }
+        }
     }
-}
-
-#[cfg(feature = "log")]
-impl DebugViaRust {
-    /// Create [DebugFlags] enabling only debug logging which is enabled by
-    /// the current logger.
-    ///
-    /// FMOD's default filter is [DebugFlags::LevelLog], which is equivalent
-    /// to an env filter of `fmod=INFO` when using [`DebugViaRust`].
-    /// Enabling the `fmod::memory`/`fmod::file`/`fmod::codec` targets should
-    /// only be done when debugging specific issues that require tracing that
-    /// area's execution; these are truly verbose trace level logging targets.
-    pub fn ideal_debug_flags() -> DebugFlags {
-        use log::{log_enabled, Level};
-        let mut debug_flags = DebugFlags::LevelNone;
-
-        if log_enabled!(target: "fmod", Level::Error) {
-            debug_flags = DebugFlags::LevelError;
-        }
-        if log_enabled!(target: "fmod", Level::Warn) {
-            debug_flags = DebugFlags::LevelWarning;
-        }
-        if log_enabled!(target: "fmod", Level::Info) {
-            debug_flags = DebugFlags::LevelLog;
-        }
-        if log_enabled!(target: "fmod::trace", Level::Trace) {
-            debug_flags |= DebugFlags::TypeTrace;
-        }
-        if log_enabled!(target: "fmod::memory", Level::Trace) {
-            debug_flags |= DebugFlags::TypeMemory;
-        }
-        if log_enabled!(target: "fmod::file", Level::Trace) {
-            debug_flags |= DebugFlags::TypeFile;
-        }
-        if log_enabled!(target: "fmod::codec", Level::Trace) {
-            debug_flags |= DebugFlags::TypeCodec;
-        }
-
-        debug_flags
-    }
-}
-
-#[cfg(feature = "log")]
-fn handle_init_failure(error: Error) {
-    match error {
-        Error::Unsupported => log::info!("FMOD debug disabled"),
-        error => whoops!("Error during FMOD debug initialization: {error}"),
-    }
+    _ => {}
 }

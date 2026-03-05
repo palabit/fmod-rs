@@ -8,6 +8,7 @@
 #![allow(rustdoc::broken_intra_doc_links)] // TODO: remove once more items exist
 #![allow(clippy::unit_arg)] // for use as Ok(callback()), where it's desirable
 #![allow(clippy::unnecessary_operation)] // for phantom slice indexing checks
+#![allow(unsafe_op_in_unsafe_fn)] // its that kinda package
 #![warn(missing_docs)]
 
 //! # FMOD.rs
@@ -59,11 +60,11 @@ extern crate self as fmod;
 pub mod core;
 #[cfg(feature = "fsbank")]
 pub mod fsbank;
-#[cfg(doc)]
-#[cfg_attr(feature = "unstable", doc(cfg(doc)))]
-pub mod platform;
 #[cfg(feature = "studio")]
 pub mod studio;
+
+#[cfg(doc)]
+pub mod platform;
 
 pub(crate) mod error;
 pub(crate) mod handle;
@@ -89,7 +90,7 @@ mod _glob_prevention {
 #[doc(no_inline)]
 pub use {
     crate::core::*,
-    cstr8::{cstr8, CStr8},
+    cstr8::{CStr8, cstr8},
 };
 
 #[doc(inline)]
@@ -99,34 +100,19 @@ raw! {
     /// Raw API Bindings
     #[cfg_attr(docsrs, doc(auto_cfg(hide(docsrs))))]
     pub mod raw {
+        #[cfg(docsrs)]
+        use fmod_rs_sys_for_doc::{core as fmod_core_sys, fsbank as fmod_fsbank_sys, studio as fmod_studio_sys};
+
         #[doc(inline)]
-        #[cfg(not(docsrs))]
         #[cfg(feature = "core")]
         pub use fmod_core_sys::*;
 
         #[doc(inline)]
-        #[cfg(not(docsrs))]
         #[cfg(feature = "fsbank")]
         pub use fmod_fsbank_sys::*;
 
         #[doc(inline)]
-        #[cfg(not(docsrs))]
         #[cfg(feature = "studio")]
         pub use fmod_studio_sys::*;
-
-        #[doc(inline)]
-        #[cfg(docsrs)]
-        #[cfg(feature = "core")]
-        pub use fmod_rs_sys_for_doc::core::*;
-
-        #[doc(inline)]
-        #[cfg(docsrs)]
-        #[cfg(feature = "fsbank")]
-        pub use fmod_rs_sys_for_doc::fsbank::*;
-
-        #[doc(inline)]
-        #[cfg(docsrs)]
-        #[cfg(feature = "studio")]
-        pub use fmod_rs_sys_for_doc::studio::*;
     }
 }

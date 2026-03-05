@@ -1,8 +1,8 @@
 use {
-    crate::utils::{decode_sbcd_u16, decode_sbcd_u8},
+    crate::utils::{decode_sbcd_u8, decode_sbcd_u16},
     fmod::{raw::*, *},
     smart_default::SmartDefault,
-    std::num::NonZero,
+    std::{cfg_select, num::NonZero},
 };
 
 fmod_struct! {
@@ -110,31 +110,33 @@ impl From<[f32; 3]> for Vector {
     }
 }
 
-#[cfg(feature = "mint")]
-impl mint::IntoMint for Vector {
-    type MintType = mint::Vector3<f32>;
-}
+cfg_select! {
+    feature = "mint" => {
+        impl mint::IntoMint for Vector {
+            type MintType = mint::Vector3<f32>;
+        }
 
-#[cfg(feature = "mint")]
-impl From<mint::Vector3<f32>> for Vector {
-    fn from(v: mint::Vector3<f32>) -> Self {
-        Self {
-            x: v.x,
-            y: v.y,
-            z: v.z,
+        impl From<mint::Vector3<f32>> for Vector {
+            fn from(v: mint::Vector3<f32>) -> Self {
+                Self {
+                    x: v.x,
+                    y: v.y,
+                    z: v.z,
+                }
+            }
+        }
+
+        impl From<Vector> for mint::Vector3<f32> {
+            fn from(v: Vector) -> Self {
+                Self {
+                    x: v.x,
+                    y: v.y,
+                    z: v.z,
+                }
+            }
         }
     }
-}
-
-#[cfg(feature = "mint")]
-impl From<Vector> for mint::Vector3<f32> {
-    fn from(v: Vector) -> Self {
-        Self {
-            x: v.x,
-            y: v.y,
-            z: v.z,
-        }
-    }
+    _ => {}
 }
 
 fmod_struct! {

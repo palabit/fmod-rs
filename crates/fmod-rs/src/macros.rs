@@ -1,3 +1,5 @@
+use std::cfg_select;
+
 macro_rules! static_assert {
     ($cond:expr $(,)?) => {
         #[allow(deprecated)]
@@ -39,28 +41,11 @@ macro_rules! doc_callout {
     };
 }
 
-macro_rules! cfg_match {
-    () => {};
-    (_ => { $($tt:tt)* } $(,)?) => { $($tt)* };
-    (($cfg:meta) => { $($tt:tt)* } $(, $($rest:tt)*)?) => {
-        #[cfg($cfg)]
-        cfg_match! { _ => { $($tt)* } }
-        $(#[cfg(not($cfg))]
-        cfg_match! { $($rest)* })?
-    }
-}
-
 macro_rules! whoops {
     {
         no_panic: $($args:tt)*
     } => {{
-        #[cfg(feature = "log")]
-        ::log::error!($($args)*);
-        // NB: always syntax verify $args
-        if cfg!(debug_assertions) {
-            use ::std::io::prelude::*;
-            let _ = writeln!(::std::io::stderr(), $($args)*);
-        }
+        log!(error, $($args)*);
     }};
     ($($args:tt)*) => {{
         // NB: assume panics get logged, don't double log
@@ -71,18 +56,35 @@ macro_rules! whoops {
     }};
 }
 
+macro_rules! log {
+    ($level:ident, $($args:tt)*) => {
+        ::std::cfg_select! {
+            feature = "log" => {{
+                ::log::$level!($($args)*);
+            }}
+            debug_assertions => {{
+                use ::std::io::prelude::*;
+                let _ = writeln!(::std::io::stderr(), $($args)*);
+            }}
+            _ => {{
+                let _ = format_args!($($args)*);
+            }}
+        }
+    }
+}
+
 macro_rules! opaque_type {
     {
         $(#[$meta:meta])*
         $vis:vis struct $Name:ident $(;)?
     } => {
-        cfg_match! {
-            (feature = "unstable_extern_type") => {
-                extern "C" {
+        ::std::cfg_select! {
+            feature = "unstable_extern_type" => {
+                unsafe extern "C" {
                     $(#[$meta])*
                     $vis type $Name;
                 }
-            },
+            }
             _ => {
                 $(#[$meta])*
                 $vis struct $Name {
@@ -94,34 +96,37 @@ macro_rules! opaque_type {
     };
 }
 
-#[cfg(feature = "raw")]
-macro_rules! raw {
-    ($(#[$meta:meta])* pub $($tt:tt)*) => {
-        #[allow(clippy::missing_safety_doc, missing_docs)]
-        #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
-        $(#[$meta])* pub $($tt)*
-    };
-    ($mac:ident! { $(#[$meta:meta])* pub $($tt:tt)* }) => {
-        $mac! {
-            #[allow(clippy::missing_safety_doc, missing_docs)]
-            #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
-            $(#[$meta])* pub $($tt)*
+cfg_select! {
+    feature = "raw" => {
+        macro_rules! raw {
+            ($(#[$meta:meta])* pub $($tt:tt)*) => {
+                #[allow(clippy::missing_safety_doc, missing_docs)]
+                #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
+                $(#[$meta])* pub $($tt)*
+            };
+            ($mac:ident! { $(#[$meta:meta])* pub $($tt:tt)* }) => {
+                $mac! {
+                    #[allow(clippy::missing_safety_doc, missing_docs)]
+                    #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
+                    $(#[$meta])* pub $($tt)*
+                }
+            };
         }
-    };
-}
-
-#[cfg(not(feature = "raw"))]
-macro_rules! raw {
-    ($(#[$meta:meta])* pub $($tt:tt)*) => {
-        #[allow(clippy::missing_safety_doc, unused, missing_docs)]
-        $(#[$meta])* pub(crate) $($tt)*
-    };
-    ($mac:ident! { $(#[$meta:meta])* pub $($tt:tt)* }) => {
-        $mac! {
-            #[allow(clippy::missing_safety_doc, unused, missing_docs)]
-            $(#[$meta])* pub(crate) $($tt)*
+    }
+    _ => {
+        macro_rules! raw {
+            ($(#[$meta:meta])* pub $($tt:tt)*) => {
+                #[allow(clippy::missing_safety_doc, unused, missing_docs)]
+                $(#[$meta])* pub(crate) $($tt)*
+            };
+            ($mac:ident! { $(#[$meta:meta])* pub $($tt:tt)* }) => {
+                $mac! {
+                    #[allow(clippy::missing_safety_doc, unused, missing_docs)]
+                    $(#[$meta])* pub(crate) $($tt)*
+                }
+            };
         }
-    };
+    }
 }
 
 macro_rules! ffi {
