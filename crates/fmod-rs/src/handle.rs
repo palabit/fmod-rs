@@ -30,7 +30,7 @@ pub(crate) use std::marker::{MetaSized, PointeeSized};
 pub trait PointeeSized {}
 
 #[cfg(all(not(doc), not(feature = "unstable")))]
-trait PointeeSized {}
+pub(crate) trait PointeeSized {}
 
 #[cfg(not(feature = "unstable"))]
 impl<T: ?Sized> PointeeSized for T {}
@@ -40,10 +40,12 @@ impl<T: ?Sized> PointeeSized for T {}
 pub trait MetaSized {}
 
 #[cfg(all(not(doc), not(feature = "unstable")))]
-trait MetaSized {}
+pub(crate) trait MetaSized {}
 
 #[cfg(not(feature = "unstable"))]
 impl<T: ?Sized> MetaSized for T {}
+
+pub(crate) use MetaSized as DerefRequiresMetaSized;
 
 #[allow(clippy::missing_safety_doc)]
 /// FMOD resources managed by a [Handle].
@@ -202,29 +204,48 @@ impl<'a, T: ?Sized + PointeeSized + Resource> Handle<'a, T> {
     }
 }
 
+#[expect(clippy::should_implement_trait)] // workaround deref to extern type
+impl<T: ?Sized + PointeeSized + Resource> Handle<'_, T> {
+    /// Dereferences the handle.
+    pub fn deref(&self) -> &T {
+        unsafe { T::from_raw(self.raw.as_ptr()) }
+    }
+
+    /// Mutably dereferences the handle.
+    pub fn deref_mut(&mut self) -> &mut T {
+        unsafe { T::from_raw_mut(self.raw.as_ptr()) }
+    }
+}
+
+impl<T: ?Sized + PointeeSized + Resource> Deref for Handle<'_, T>
+where
+    T: DerefRequiresMetaSized,
+{
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        self.deref()
+    }
+}
+
+impl<T: ?Sized + PointeeSized + Resource> DerefMut for Handle<'_, T>
+where
+    T: DerefRequiresMetaSized,
+{
+    fn deref_mut(&mut self) -> &mut T {
+        self.deref_mut()
+    }
+}
+
 impl<T: ?Sized + PointeeSized + Resource> AsRef<T> for Handle<'_, T> {
     fn as_ref(&self) -> &T {
-        unsafe { T::from_raw(self.raw.as_ptr()) }
+        self.deref()
     }
 }
 
 impl<T: ?Sized + PointeeSized + Resource> AsMut<T> for Handle<'_, T> {
     fn as_mut(&mut self) -> &mut T {
-        unsafe { T::from_raw_mut(self.raw.as_ptr()) }
-    }
-}
-
-impl<T: ?Sized + MetaSized + Resource> Deref for Handle<'_, T> {
-    type Target = T;
-
-    fn deref(&self) -> &T {
-        self.as_ref()
-    }
-}
-
-impl<T: ?Sized + MetaSized + Resource> DerefMut for Handle<'_, T> {
-    fn deref_mut(&mut self) -> &mut T {
-        self.as_mut()
+        self.deref_mut()
     }
 }
 

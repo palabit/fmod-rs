@@ -1,20 +1,42 @@
 use {
     crate::utils::{catch_user_unwind, fmod_get_string},
     fmod::{raw::*, *},
-    std::{ffi::c_void, ops::Deref},
+    std::{
+        ffi::c_void,
+        ops::{Deref, DerefMut},
+    },
 };
 
-#[cfg(not(feature = "unstable"))]
-impl Deref for ChannelGroup {
+#[allow(trivial_bounds)]
+impl Deref for ChannelGroup
+where
+    ChannelControl: DerefRequiresMetaSized,
+{
     type Target = ChannelControl;
     fn deref(&self) -> &Self::Target {
         self.as_ref()
     }
 }
 
+#[allow(trivial_bounds)]
+impl DerefMut for ChannelGroup
+where
+    ChannelControl: DerefRequiresMetaSized,
+{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.as_mut()
+    }
+}
+
 impl AsRef<ChannelControl> for ChannelGroup {
     fn as_ref(&self) -> &ChannelControl {
         unsafe { ChannelControl::from_raw(self.as_raw() as _) }
+    }
+}
+
+impl AsMut<ChannelControl> for ChannelGroup {
+    fn as_mut(&mut self) -> &mut ChannelControl {
+        unsafe { ChannelControl::from_raw_mut(self.as_raw() as _) }
     }
 }
 
