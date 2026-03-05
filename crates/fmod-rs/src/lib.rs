@@ -1,5 +1,5 @@
 #![cfg_attr(feature = "unstable", feature(core_io_borrowed_buf, read_buf))]
-#![cfg_attr(feature = "unstable", feature(doc_cfg, trait_alias))]
+#![cfg_attr(feature = "unstable", feature(doc_cfg, trait_alias, trivial_bounds))]
 #![cfg_attr(feature = "unstable", feature(extern_types, sized_hierarchy))]
 #![allow(rustdoc::broken_intra_doc_links)] // TODO: remove once more items exist
 #![allow(clippy::unit_arg)] // for use as Ok(callback()), where it's desirable
@@ -93,7 +93,7 @@ pub use self::{error::*, handle::*};
 
 raw! {
     /// Raw API Bindings
-    #[doc(auto_cfg(hide(docsrs)))]
+    #[cfg_attr(docsrs, doc(auto_cfg(hide(docsrs))))]
     pub mod raw {
         #[doc(inline)]
         #[cfg(not(docsrs))]
