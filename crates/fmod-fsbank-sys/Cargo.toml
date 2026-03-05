@@ -12,9 +12,6 @@ repository = "https://github.com/CAD97/fmod-rs"
 keywords = ["gamedev", "audio", "sound", "fmod", "adaptive-audio"]
 categories = ["external-ffi-bindings", "game-development", "multimedia::audio"]
 
-[dependencies]
-fmod-core-sys.workspace = true # WEIRD: this is unused other than DEP_FMOD_*
-
 [build-dependencies]
 build-rs.workspace = true
 fmod-build-helper.workspace = true
