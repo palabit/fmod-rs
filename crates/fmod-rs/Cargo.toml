@@ -37,21 +37,27 @@ mint = ["dep:mint"]
 ## Enable access to the raw FMOD API calls.
 raw = []
 
+# Use bundled (pregenerated) raw bindings. For documentation builds only.
+_use_bundled_bindings_for_docs = ["dep:fmod-rs-sys-for-doc"]
+
 #! ### Experimental feature flags
 #!
 #! These features can change public API and can change at any time. Be warned!
 
 ## Use unstable Rust features for the safe API. Currently, this means to:
-## - Use `feature(extern_type)` for FMOD resource types.
-## - Use `feature(doc_auto_cfg, doc_cfg)` to display cfg gates in documentation.
-## - Use `feature(core_io_borrowed_buf, read_buf)` to elide some defensively duplicated stack buffers.
+## - Use `feature(extern_types, sized_hierarchy)` for FMOD resource types.
+## - Use `feature(doc_cfg)` to display cfg gates in documentation.
 ## - Use `feature(trait_alias)` for the `ChannelControlCallback` trait alias.
+## - Use `feature(core_io_borrowed_buf, read_buf)` to elide some defensively duplicated stack buffers.
 unstable = []
 
 [dependencies]
 fmod-core-sys = { workspace = true, optional = true }
 fmod-fsbank-sys = { workspace = true, optional = true }
 fmod-studio-sys = { workspace = true, optional = true }
+
+# should match the fallback in build.rs
+fmod-rs-sys-for-doc = { version = "=2.3.12", optional = true }
 
 bytemuck = { version = "1.16.1", features = [
     "derive",
@@ -71,3 +77,7 @@ mint = { version = "0.5.9", optional = true }
 
 [build-dependencies]
 build-rs.workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+targets = []

@@ -93,17 +93,36 @@ pub use self::{error::*, handle::*};
 
 raw! {
     /// Raw API Bindings
+    #[doc(auto_cfg(hide(docsrs)))]
     pub mod raw {
         #[doc(inline)]
+        #[cfg(not(docsrs))]
         #[cfg(feature = "core")]
         pub use fmod_core_sys::*;
 
         #[doc(inline)]
+        #[cfg(not(docsrs))]
         #[cfg(feature = "fsbank")]
         pub use fmod_fsbank_sys::*;
 
         #[doc(inline)]
+        #[cfg(not(docsrs))]
         #[cfg(feature = "studio")]
         pub use fmod_studio_sys::*;
+
+        #[doc(inline)]
+        #[cfg(docsrs)]
+        #[cfg(feature = "core")]
+        pub use fmod_rs_sys_for_doc::core::*;
+
+        #[doc(inline)]
+        #[cfg(docsrs)]
+        #[cfg(feature = "fsbank")]
+        pub use fmod_rs_sys_for_doc::fsbank::*;
+
+        #[doc(inline)]
+        #[cfg(docsrs)]
+        #[cfg(feature = "studio")]
+        pub use fmod_rs_sys_for_doc::studio::*;
     }
 }

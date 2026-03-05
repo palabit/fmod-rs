@@ -10,6 +10,15 @@ static HEADERS: &[(&str, &[(&str, &str)])] = &[
 fn main() {
     rerun_if_changed("build.rs");
 
+    rerun_if_env_changed("DOCS_RS");
+    if std::env::var("DOCS_RS").is_ok() {
+        let out_dir = out_dir();
+        for (header, _) in HEADERS {
+            std::fs::write(out_dir.join(header).with_extension("rs"), "// dummy").unwrap();
+        }
+        return;
+    }
+
     let (inc, lib) = fmod_studio_path();
 
     metadata("inc", &inc);

@@ -3,9 +3,13 @@ use build_rs::{input::*, output::*};
 fn main() {
     rerun_if_changed("build.rs");
 
-    let Some(fmod_version) = dep_metadata("fmod", "version") else {
-        return;
+    rerun_if_env_changed("DOCS_RS");
+    let fmod_version = if std::env::var("DOCS_RS").is_ok() {
+        "2.3.12".into() // should match doc-only fmod-rs-sys-for-doc dependency
+    } else {
+        dep_metadata("fmod", "version").expect("DEP_FMOD_VERSION should be set")
     };
+
     let version = fmod_version.split('.').collect::<Vec<_>>();
     assert!(version.len() == 3);
 
