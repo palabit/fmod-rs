@@ -39,4 +39,7 @@ fn main() {
     }
 
     rustc_env("FMOD_VERSION", &fmod_version.to_string());
+
+    // while the feature is disabled, don't complain about it please
+    rustc_check_cfg_values("feature", &["unstable_extern_type"]);
 }
