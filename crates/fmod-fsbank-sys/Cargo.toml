@@ -1,12 +1,13 @@
 [package]
 name = "fmod-fsbank-sys"
-version = "1.0.1"
+version = "1.0.2"
 edition.workspace = true
 rust-version.workspace = true
 license-file = "LICENSE.txt"
 links = "fsbank"
 
 description = "FMOD FSBank bindings"
+documentation = "https://www.fmod.com/docs/api/fsbank-api.html"
 repository = "https://github.com/CAD97/fmod-rs"
 keywords = ["gamedev", "audio", "sound", "fmod", "adaptive-audio"]
 categories = ["external-ffi-bindings", "game-development", "multimedia::audio"]
