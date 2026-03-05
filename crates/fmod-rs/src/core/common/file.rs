@@ -127,7 +127,7 @@ impl FileBuffer<'_> {
     pub fn fill_from(&mut self, reader: &mut (impl Read + ?Sized)) -> io::Result<()> {
         let result;
 
-        #[cfg(feature = "unstable")]
+        #[cfg(feature = "unstable_read_buf")]
         {
             let mut buf = io::BorrowedBuf::from(self.unfilled());
             result = reader.read_buf_exact(buf.unfilled());
@@ -135,7 +135,7 @@ impl FileBuffer<'_> {
             unsafe { self.advance(written) };
         };
 
-        #[cfg(not(feature = "unstable"))]
+        #[cfg(not(feature = "unstable_read_buf"))]
         {
             result = io::copy(reader, self);
         }

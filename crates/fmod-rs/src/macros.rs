@@ -77,7 +77,7 @@ macro_rules! opaque_type {
         $vis:vis struct $Name:ident $(;)?
     } => {
         cfg_match! {
-            (feature = "unstable") => {
+            (feature = "unstable_extern_type") => {
                 extern "C" {
                     $(#[$meta])*
                     $vis type $Name;
@@ -98,13 +98,13 @@ macro_rules! opaque_type {
 macro_rules! raw {
     ($(#[$meta:meta])* pub $($tt:tt)*) => {
         #[allow(clippy::missing_safety_doc, missing_docs)]
-        #[cfg_attr(feature = "unstable", doc(cfg(feature = "raw")))]
+        #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
         $(#[$meta])* pub $($tt)*
     };
     ($mac:ident! { $(#[$meta:meta])* pub $($tt:tt)* }) => {
         $mac! {
             #[allow(clippy::missing_safety_doc, missing_docs)]
-            #[doc(cfg(feature = "raw"))]
+            #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
             $(#[$meta])* pub $($tt)*
         }
     };

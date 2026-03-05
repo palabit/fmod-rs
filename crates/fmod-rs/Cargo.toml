@@ -44,12 +44,22 @@ _use_bundled_bindings_for_docs = ["dep:fmod-rs-sys-for-doc"]
 #!
 #! These features can change public API and can change at any time. Be warned!
 
-## Use unstable Rust features for the safe API. Currently, this means to:
-## - Use `feature(extern_types, sized_hierarchy)` for FMOD resource types.
-## - Use `feature(doc_cfg)` to display cfg gates in documentation.
-## - Use `feature(trait_alias)` for the `ChannelControlCallback` trait alias.
-## - Use `feature(core_io_borrowed_buf, read_buf)` to elide some defensively duplicated stack buffers.
-unstable = []
+## Enable all unstable feature flags.
+unstable = [
+    "unstable_doc_cfg",
+    "unstable_extern_type",
+    "unstable_read_buf",
+    "unstable_trait_alias",
+]
+
+## Use `#[doc(cfg())]` to display cfg gates in documentation.
+unstable_doc_cfg = []
+## Use extern types for FMOD resource types. (Removes `impl Deref for Handle`)
+unstable_extern_type = []
+## Use `Read::read_buf` to elide some otherwise unnecessary copies.
+unstable_read_buf = []
+## Make `ChannelControlCallback` a proper trait alias.
+unstable_trait_alias = []
 
 [dependencies]
 fmod-core-sys = { workspace = true, optional = true }

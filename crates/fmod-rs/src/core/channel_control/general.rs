@@ -38,7 +38,7 @@ impl ChannelControl {
 }
 
 cfg_match! {
-    (feature = "unstable") => {
+    (feature = "unstable_trait_alias") => {
         /// Callback for Channel and ChannelGroup notifications.
         ///
         /// Callbacks are called from the game thread when set from the Core API or

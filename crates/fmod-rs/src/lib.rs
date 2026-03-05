@@ -1,6 +1,10 @@
-#![cfg_attr(feature = "unstable", feature(core_io_borrowed_buf, read_buf))]
-#![cfg_attr(feature = "unstable", feature(doc_cfg, trait_alias, trivial_bounds))]
-#![cfg_attr(feature = "unstable", feature(extern_types, sized_hierarchy))]
+#![cfg_attr(feature = "unstable_read_buf", feature(core_io_borrowed_buf, read_buf))]
+#![cfg_attr(feature = "unstable_doc_cfg", feature(doc_cfg))]
+#![cfg_attr(feature = "unstable_trait_alias", feature(trait_alias))]
+#![cfg_attr(
+    feature = "unstable_extern_type",
+    feature(extern_types, sized_hierarchy, trivial_bounds)
+)]
 #![allow(rustdoc::broken_intra_doc_links)] // TODO: remove once more items exist
 #![allow(clippy::unit_arg)] // for use as Ok(callback()), where it's desirable
 #![allow(clippy::unnecessary_operation)] // for phantom slice indexing checks

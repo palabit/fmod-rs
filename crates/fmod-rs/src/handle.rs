@@ -22,27 +22,27 @@ use {
 /// - `>= 1` indicates that systems exist, and creating another is unsafe.
 pub(crate) static GLOBAL_SYSTEM_STATE: RwLock<usize> = RwLock::new(0);
 
-#[cfg(feature = "unstable")]
+#[cfg(feature = "unstable_extern_type")]
 pub(crate) use std::marker::{MetaSized, PointeeSized};
 
-#[cfg(all(doc, not(feature = "unstable")))]
+#[cfg(all(doc, not(feature = "unstable_extern_type")))]
 /// Shim for [`std::marker::PointeeSized`] bounds on stable.
 pub trait PointeeSized {}
 
-#[cfg(all(not(doc), not(feature = "unstable")))]
+#[cfg(all(not(doc), not(feature = "unstable_extern_type")))]
 pub(crate) trait PointeeSized {}
 
-#[cfg(not(feature = "unstable"))]
+#[cfg(not(feature = "unstable_extern_type"))]
 impl<T: ?Sized> PointeeSized for T {}
 
-#[cfg(all(doc, not(feature = "unstable")))]
+#[cfg(all(doc, not(feature = "unstable_extern_type")))]
 /// Shim for [`std::marker::MetaSized`] bounds on stable.
 pub trait MetaSized {}
 
-#[cfg(all(not(doc), not(feature = "unstable")))]
+#[cfg(all(not(doc), not(feature = "unstable_extern_type")))]
 pub(crate) trait MetaSized {}
 
-#[cfg(not(feature = "unstable"))]
+#[cfg(not(feature = "unstable_extern_type"))]
 impl<T: ?Sized> MetaSized for T {}
 
 pub(crate) use MetaSized as DerefRequiresMetaSized;
@@ -52,13 +52,13 @@ pub(crate) use MetaSized as DerefRequiresMetaSized;
 pub unsafe trait Resource: PointeeSized + fmt::Debug + Sealed {
     #[allow(missing_docs)]
     #[cfg_attr(not(feature = "raw"), doc(hidden))]
-    #[cfg_attr(feature = "unstable", doc(cfg(feature = "raw")))]
+    #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
     type Raw;
 
     #[inline(always)]
     #[allow(missing_docs)]
     #[cfg_attr(not(feature = "raw"), doc(hidden))]
-    #[cfg_attr(feature = "unstable", doc(cfg(feature = "raw")))]
+    #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
     fn as_raw(&self) -> *mut Self::Raw {
         self as *const Self as *mut Self::Raw
     }
@@ -70,7 +70,7 @@ pub unsafe trait Resource: PointeeSized + fmt::Debug + Sealed {
     #[inline(always)]
     #[allow(missing_docs)]
     #[cfg_attr(not(feature = "raw"), doc(hidden))]
-    #[cfg_attr(feature = "unstable", doc(cfg(feature = "raw")))]
+    #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
     unsafe fn from_raw<'a>(this: *mut Self::Raw) -> &'a Self {
         debug_assert!(!this.is_null());
         &*Self::cast_from_raw(this)
@@ -80,7 +80,7 @@ pub unsafe trait Resource: PointeeSized + fmt::Debug + Sealed {
     #[inline(always)]
     #[allow(missing_docs)]
     #[cfg_attr(not(feature = "raw"), doc(hidden))]
-    #[cfg_attr(feature = "unstable", doc(cfg(feature = "raw")))]
+    #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
     unsafe fn from_raw_mut<'a>(this: *mut Self::Raw) -> &'a mut Self {
         debug_assert!(!this.is_null());
         &mut *Self::cast_from_raw(this)
@@ -90,7 +90,7 @@ pub unsafe trait Resource: PointeeSized + fmt::Debug + Sealed {
     #[inline(always)]
     #[allow(missing_docs)]
     #[cfg_attr(not(feature = "raw"), doc(hidden))]
-    #[cfg_attr(feature = "unstable", doc(cfg(feature = "raw")))]
+    #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
     unsafe fn try_from_raw<'a>(this: *mut Self::Raw) -> Option<&'a Self> {
         if this.is_null() {
             None
@@ -103,7 +103,7 @@ pub unsafe trait Resource: PointeeSized + fmt::Debug + Sealed {
     #[inline(always)]
     #[allow(missing_docs)]
     #[cfg_attr(not(feature = "raw"), doc(hidden))]
-    #[cfg_attr(feature = "unstable", doc(cfg(feature = "raw")))]
+    #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
     unsafe fn try_from_raw_mut<'a>(this: *mut Self::Raw) -> Option<&'a mut Self> {
         if this.is_null() {
             None
@@ -114,7 +114,7 @@ pub unsafe trait Resource: PointeeSized + fmt::Debug + Sealed {
 
     #[allow(missing_docs)]
     #[cfg_attr(not(feature = "raw"), doc(hidden))]
-    #[cfg_attr(feature = "unstable", doc(cfg(feature = "raw")))]
+    #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
     unsafe fn release(this: *mut Self::Raw) -> fmod::Result;
 }
 
@@ -259,12 +259,12 @@ pub trait HandleExt<T: ?Sized + PointeeSized + Resource>: Sealed {
     fn release(&mut self) -> fmod::Result;
 
     #[cfg_attr(not(feature = "raw"), doc(hidden))]
-    #[cfg_attr(feature = "unstable", doc(cfg(feature = "raw")))]
+    #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
     #[allow(missing_docs)]
     fn into_raw(self) -> *mut T::Raw;
 
     #[cfg_attr(not(feature = "raw"), doc(hidden))]
-    #[cfg_attr(feature = "unstable", doc(cfg(feature = "raw")))]
+    #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
     #[allow(missing_docs, clippy::missing_safety_doc)]
     unsafe fn from_raw(raw: *mut T::Raw) -> Self;
 }

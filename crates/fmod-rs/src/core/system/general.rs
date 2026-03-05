@@ -527,7 +527,7 @@ pub type SystemThreadHandle = std::os::unix::thread::RawPthread;
 /// - Unix: [`std::os::unix::thread::RawPthread`]
 /// - Windows: [`std::os::windows::io::RawHandle`]
 #[cfg(doc)]
-#[cfg_attr(feature = "unstable", doc(cfg(any(unix, windows))))]
+#[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(any(unix, windows))))]
 pub type SystemThreadHandle = unknown::SystemThreadHandle;
 
 #[cfg(doc)]

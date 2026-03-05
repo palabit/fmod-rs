@@ -1,7 +1,7 @@
 use fmod::{raw::*, *};
 
 fmod_enum! {
-    #[cfg_attr(feature = "unstable", doc(cfg(target_os = "ios")))]
+    #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(target_os = "ios")))]
     /// Control whether the sound will use a the dedicated hardware decoder or a
     /// software codec.
     ///
