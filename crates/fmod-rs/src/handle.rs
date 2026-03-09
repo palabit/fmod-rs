@@ -2,7 +2,6 @@
 
 use {
     crate::shims::{DerefSized, PointeeSized},
-    parking_lot::RwLock,
     std::{
         fmt,
         marker::PhantomData,
@@ -12,16 +11,6 @@ use {
         ptr,
     },
 };
-
-/// Only one system may be safely created at a time, as system create and
-/// release races with all of the FMOD API. Additionally, this must be an
-/// actual lock, so that it can synchronize with free functions as well.
-///
-/// - A write lock is acquired to perform system create/release.
-/// - A read lock is acquired to perform free functions.
-/// - `0` indicates that no system exists, and one may be created.
-/// - `>= 1` indicates that systems exist, and creating another is unsafe.
-pub(crate) static GLOBAL_SYSTEM_STATE: RwLock<usize> = RwLock::new(0);
 
 #[allow(clippy::missing_safety_doc)]
 /// FMOD resources managed by a [Handle].
