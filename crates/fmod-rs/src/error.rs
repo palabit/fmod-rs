@@ -4,13 +4,15 @@ use {
 };
 
 macro_rules! error_enum_struct {
-    {$(
+    {
         $(#[$meta:meta])*
         $vis:vis enum $Name:ident: NonZeroI32 {$(
             $(#[$vmeta:meta])*
             $Variant:ident = $value:expr,
         )*}
-    )*} => {$(
+
+        $(impl { $($impl:tt)* })?
+    } => {
         $(#[$meta])*
         #[derive(Clone, Copy, PartialEq, Eq)]
         #[derive(::zerocopy::TryFromBytes, ::zerocopy::IntoBytes)]
@@ -20,8 +22,7 @@ macro_rules! error_enum_struct {
         }
 
         impl $Name {
-            // to clean up rustdoc, call this helper rather than inlining it
-            const fn cook(raw: i32) -> Self {
+            const fn new(raw: i32) -> Self {
                 match Self::from_raw(raw) {
                     Err(this) => this,
                     Ok(()) => panic!("cooked FMOD_OK as an error"),
@@ -31,8 +32,10 @@ macro_rules! error_enum_struct {
             $(
                 $(#[$vmeta])*
                 #[allow(non_upper_case_globals)]
-                pub const $Variant: Self = Self::cook($value);
+                pub const $Variant: Self = Self::new($value);
             )*
+
+            $($($impl)*)?
         }
 
         impl $Name {
@@ -55,7 +58,7 @@ macro_rules! error_enum_struct {
         #[allow(deprecated)]
         const _: () = {
             const VARIANTS: &[$Name] = &[$( $Name::$Variant, )*];
-            const EXPECTED_VARIANT_COUNT: usize = (FMOD_ERR_TOOMANYSAMPLES + 1) as usize;
+            const EXPECTED_VARIANT_COUNT: usize = FMOD_ERR_TOOMANYSAMPLES as usize;
 
             assert!(VARIANTS.len() >= EXPECTED_VARIANT_COUNT, "fmod::Error is missing some variant(s)");
             assert!(VARIANTS.len() <= EXPECTED_VARIANT_COUNT, "fmod::Error has extraneous variant(s)");
@@ -70,8 +73,11 @@ macro_rules! error_enum_struct {
                 }
             }
         }
-    )*};
+    };
 }
+
+const FMOD_ERR_RUST_PANIC: i32 = i32::from_be_bytes(*"🦀".as_bytes().as_array().unwrap());
+static_assert!(FMOD_ERR_RUST_PANIC < 0, "custom error should be negative");
 
 error_enum_struct! {
     /// An error that FMOD can emit.
@@ -239,9 +245,21 @@ error_enum_struct! {
         RecordDisconnected = FMOD_ERR_RECORD_DISCONNECTED,
         /// The length provided exceeds the allowable limit.
         TooManySamples = FMOD_ERR_TOOMANYSAMPLES,
+    }
 
-        /// Rust code panicked in an FMOD callback.
-        RustPanicked = -1,
+    impl {
+        /// A Rust panic attempted to unwind from an FMOD callback.
+        ///
+        /// ```rust
+        /// # use std::str;
+        /// # #[cfg(feature = "raw")]
+        /// let raw_error_value: i32 = fmod::Error::RustPanicked.into_raw();
+        /// # #[cfg(not(feature = "raw"))] let raw_error_value: i32 = unsafe { std::mem::transmute(fmod::Error::RustPanicked) };
+        /// let crab_emoji_bytes: [u8; 4] = *"🦀".as_bytes().as_array().unwrap();
+        /// assert_eq!(raw_error_value.to_be_bytes(), crab_emoji_bytes);
+        /// ```
+        #[allow(non_upper_case_globals)]
+        pub const RustPanicked: Self = Self::new(FMOD_ERR_RUST_PANIC);
     }
 }
 
@@ -293,29 +311,99 @@ impl ResultExt for Result<(), Error> {
     }
 }
 
-impl From<Error> for io::Error {
-    fn from(err: Error) -> Self {
-        match err {
-            | Error::DspNotFound
-            | Error::TagNotFound
-            | Error::FileNotFound
-            | Error::EventNotFound => io::ErrorKind::NotFound.into(),
-            | Error::NetWouldBlock => io::ErrorKind::WouldBlock.into(),
-            | Error::InvalidFloat
-            | Error::InvalidHandle
-            | Error::InvalidParam
-            | Error::InvalidPosition
-            | Error::InvalidSpeaker
-            | Error::InvalidSyncPoint
-            | Error::InvalidThread
-            | Error::InvalidVector => io::ErrorKind::InvalidInput.into(),
-            | Error::BadCommand
-            | Error::DspType
-            | Error::Format
-            | Error::Unimplemented
-            | Error::Unsupported => io::ErrorKind::Unsupported.into(),
-            | Error::HttpTimeout | Error::EventLiveUpdateTimeout => io::ErrorKind::TimedOut.into(),
-            err => io::Error::other(err),
+impl From<Error> for io::ErrorKind {
+    fn from(error: Error) -> Self {
+        match error {
+            Error::BadCommand => Self::InvalidInput,
+            Error::BadCommand => Self::Unsupported,
+            Error::ChannelAlloc => Self::StorageFull,
+            Error::ChannelStolen => Self::StaleNetworkFileHandle,
+            Error::Dma => Self::Other,
+            Error::DspConnection => Self::InvalidData,
+            Error::DspDontProcess => Self::Other,
+            Error::DspFormat => Self::InvalidInput,
+            Error::DspInUse => Self::AlreadyExists,
+            Error::DspNotFound => Self::InvalidInput,
+            Error::DspReserved => Self::AlreadyExists,
+            Error::DspSilence => Self::WriteZero,
+            Error::DspType => Self::Unsupported,
+            Error::FileBad => Self::InvalidData,
+            Error::FileCouldNotSeek => Self::NotSeekable,
+            Error::FileDiskEjected => Self::Other,
+            Error::FileEof => Self::WriteZero,
+            Error::FileEndOfData => Self::UnexpectedEof,
+            Error::FileNotFound => Self::NotFound,
+            Error::Format => Self::Unsupported,
+            Error::HeaderMismatch => Self::InvalidInput,
+            Error::Http => Self::Other,
+            Error::HttpAccess => Self::ConnectionRefused,
+            Error::HttpProxyAuth => Self::PermissionDenied,
+            Error::HttpServerError => Self::Other,
+            Error::HttpTimeout => Self::TimedOut,
+            Error::Initialization => Self::Unsupported,
+            Error::Initialized => Self::HostUnreachable,
+            Error::Internal => Self::Other,
+            Error::InvalidFloat => Self::InvalidInput,
+            Error::InvalidHandle => Self::InvalidInput,
+            Error::InvalidParam => Self::InvalidInput,
+            Error::InvalidPosition => Self::InvalidInput,
+            Error::InvalidSpeaker => Self::InvalidInput,
+            Error::InvalidSyncPoint => Self::InvalidInput,
+            Error::InvalidThread => Self::InvalidInput,
+            Error::InvalidVector => Self::InvalidInput,
+            Error::MaxAudible => Self::QuotaExceeded,
+            Error::Memory => Self::OutOfMemory,
+            Error::MemoryCantPoint => Self::Unsupported,
+            Error::Needs3d => Self::Unsupported,
+            Error::NeedsHardware => Self::Unsupported,
+            Error::NetConnect => Self::HostUnreachable,
+            Error::NetSocketError => Self::Other,
+            Error::NetUrl => Self::NotFound,
+            Error::NetWouldBlock => Self::WouldBlock,
+            Error::NotReady => Self::ResourceBusy,
+            Error::OutputAllocated => Self::AlreadyExists,
+            Error::OutputCreateBuffer => Self::Other,
+            Error::OutputDriverCall => Self::Other,
+            Error::OutputFormat => Self::Unsupported,
+            Error::OutputInit => Self::Other,
+            Error::OutputNoDrivers => Self::InvalidData,
+            Error::Plugin => Self::Other,
+            Error::PluginMissing => Self::NotFound,
+            Error::PluginResource => Self::NotFound,
+            Error::PluginVersion => Self::Unsupported,
+            Error::Record => Self::Other,
+            Error::ReverbChannelGroup => Self::Other,
+            Error::ReverbInstance => Self::Unsupported,
+            Error::SubSounds => Self::InvalidData,
+            Error::SubSoundAllocated => Self::AlreadyExists,
+            Error::SubSoundCantMove => Self::AlreadyExists,
+            Error::TagNotFound => Self::NotFound,
+            Error::TooManyChannels => Self::QuotaExceeded,
+            Error::Truncated => Self::UnexpectedEof,
+            Error::Unimplemented => Self::Unsupported,
+            Error::Uninitialized => Self::ConnectionRefused,
+            Error::Unsupported => Self::Unsupported,
+            Error::Version => Self::Unsupported,
+            Error::EventAlreadyLoaded => Self::AlreadyExists,
+            Error::EventLiveUpdateBusy => Self::AlreadyExists,
+            Error::EventLiveUpdateMismatch => Self::Other,
+            Error::EventLiveUpdateTimeout => Self::TimedOut,
+            Error::EventNotFound => Self::NotFound,
+            Error::StudioUninitialized => Self::ConnectionRefused,
+            Error::StudioNotLoaded => Self::ConnectionRefused,
+            Error::InvalidString => Self::InvalidInput,
+            Error::AlreadyLocked => Self::InvalidData,
+            Error::NotLocked => Self::InvalidData,
+            Error::RecordDisconnected => Self::Other,
+            Error::TooManySamples => Self::QuotaExceeded,
+            _ => Self::Other,
         }
+    }
+}
+
+impl From<Error> for io::Error {
+    fn from(error: Error) -> Self {
+        let kind: io::ErrorKind = error.into();
+        io::Error::new(kind, error)
     }
 }
