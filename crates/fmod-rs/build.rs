@@ -18,28 +18,55 @@ fn main() {
     let minor_version: u8 = version[2].parse().unwrap();
 
     assert_eq!(product_version, 2, "Only FMOD 2.02 and 2.03 are supported");
+    if !matches!(major_version, 2 | 3) {
+        warning("Only FMOD 2.02 and 2.03 are supported. Use other versions at your own risk.");
+    }
 
     rustc_check_cfg_values("fmod_version_major", &["2", "3"]);
     rustc_cfg_value("fmod_version_major", &format!("{major_version}"));
 
     rustc_check_cfg_values("fmod_has_version_major", &["2", "3"]);
     for version in 2..=major_version {
-        rustc_cfg_value("has_fmod_version_major", &format!("{version}"));
+        rustc_cfg_value("fmod_has_version_major", &format!("{version}"));
     }
 
-    let possible_versions: Vec<_> = (0..=99).map(|v| v.to_string()).collect();
-    let possible_versions: Vec<_> = possible_versions.iter().map(|v| v as _).collect();
+    let possible_minor_versions: Vec<_> = (0..=99).map(|v| v.to_string()).collect();
+    let possible_minor_versions: Vec<_> = possible_minor_versions.iter().map(|v| &**v).collect();
 
-    rustc_check_cfg_values("fmod_version_minor", &possible_versions[..]);
+    rustc_check_cfg_values("fmod_version_minor", &possible_minor_versions[..]);
     rustc_cfg_value("fmod_version_minor", &format!("{minor_version}"));
 
-    rustc_check_cfg_values("fmod_has_version_minor", &possible_versions[..]);
+    rustc_check_cfg_values("fmod_has_version_minor", &possible_minor_versions[..]);
     for version in 0..=minor_version {
-        rustc_cfg_value("has_fmod_version_minor", &format!("{version}"));
+        rustc_cfg_value("fmod_has_version_minor", &format!("{version}"));
     }
 
-    rustc_env("FMOD_VERSION", &fmod_version.to_string());
+    for major in 2..=3 {
+        let possible_versions: Vec<_> = (0..=99)
+            .map(|minor| format!("2.{major:02}.{minor:02}"))
+            .collect();
+        let possible_versions: Vec<_> = possible_versions.iter().map(|v| &**v).collect();
+        rustc_check_cfg_values("fmod_has_version", &possible_versions[..]);
+        rustc_check_cfg_values("fmod_version", &possible_versions[..]);
+    }
 
-    // while the feature is disabled, don't complain about it please
+    let version = format!("2.{major_version:02}.{minor_version:02}");
+    rustc_cfg_value("fmod_version", &version);
+    for minor in 0..=minor_version {
+        let version = format!("2.{major_version:02}.{minor:02}");
+        if major_version == 3 && minor == 9 {
+            assert_eq!(version, "2.03.09");
+        }
+        rustc_cfg_value("fmod_has_version", &version);
+    }
+    if major_version > 2 {
+        for minor in 3..=33 {
+            rustc_cfg_value("fmod_has_version", &format!("2.02.{minor:02}"));
+        }
+    }
+
+    rustc_env("FMOD_VERSION", &version);
+
+    // feature temporarily disabled; please don't complain about it
     rustc_check_cfg_values("feature", &["unstable_extern_type"]);
 }

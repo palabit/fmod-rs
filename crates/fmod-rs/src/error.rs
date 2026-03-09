@@ -13,6 +13,8 @@ macro_rules! error_enum_struct {
     )*} => {$(
         $(#[$meta])*
         #[derive(Clone, Copy, PartialEq, Eq)]
+        #[derive(::zerocopy::TryFromBytes, ::zerocopy::IntoBytes)]
+        #[derive(::zerocopy::KnownLayout, ::zerocopy::Immutable)]
         $vis struct $Name {
             raw: NonZeroI32,
         }
@@ -50,10 +52,14 @@ macro_rules! error_enum_struct {
             }
         }
 
-        static_assert! {
-            [$($Name::$Variant),*].len() == (FMOD_ERR_TOOMANYSAMPLES + 1) as usize,
-            "fmod::Error is missing some variant(s)",
-        }
+        #[allow(deprecated)]
+        const _: () = {
+            const VARIANTS: &[$Name] = &[$( $Name::$Variant, )*];
+            const EXPECTED_VARIANT_COUNT: usize = (FMOD_ERR_TOOMANYSAMPLES + 1) as usize;
+
+            assert!(VARIANTS.len() >= EXPECTED_VARIANT_COUNT, "fmod::Error is missing some variant(s)");
+            assert!(VARIANTS.len() <= EXPECTED_VARIANT_COUNT, "fmod::Error has extraneous variant(s)");
+        };
 
         impl fmt::Debug for $Name {
             #[deny(unreachable_patterns)]

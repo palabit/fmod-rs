@@ -632,7 +632,8 @@ macro_rules! fmod_enum {
             const { self < $MAX:expr },
             const { self >= $MIN:expr },
         {$(
-            $(#[$($vmeta:tt)*])*
+            $(#[*cfg($vcfg:meta)])?
+            $(#[$vmeta:meta])*
             $Variant:ident = $value:expr,
         )*}
     } => {
@@ -644,7 +645,8 @@ macro_rules! fmod_enum {
         #[derive(::zerocopy::KnownLayout, ::zerocopy::Immutable)]
         $vis enum $Name {
             $(
-                $(#[$($vmeta)*])*
+                $(#[cfg($vcfg)])?
+                $(#[$vmeta])*
                 $Variant = $value,
             )*
         }
@@ -701,30 +703,35 @@ macro_rules! fmod_enum {
         }
 
         $(
+            $(#[cfg($vcfg)])?
             static_assert!($MIN <= $Name::$Variant.into_raw() && $Name::$Variant.into_raw() < $MAX);
         )*
 
         static_assert!($MIN <= 0 && 0 < $MAX);
         assert_type_eq!($Raw, i32);
 
-        static_assert! {
-            [$($Name::$Variant),*].len() == ($MAX - $MIN) as usize,
-            concat!("fmod_enum! ", stringify!($Raw), " is missing some variant(s) in ", file!()),
-        }
+        #[allow(deprecated)]
+        const _: () = {
+            const VARIANTS: &[$Name] = &[$( $(#[cfg($vcfg)])? $Name::$Variant, )*];
+            const EXPECTED_VARIANT_COUNT: usize = ($MAX - $MIN) as usize;
 
-        // SAFETY: the static assert proves there exists a zero valued variant
-        unsafe impl ::zerocopy::FromZeros for $Name {
+            assert!(
+                VARIANTS.len() >= EXPECTED_VARIANT_COUNT,
+                concat!("fmod_enum! ", stringify!($Raw), " is missing some variant(s) in ", file!()),
+            );
+            assert!(
+                VARIANTS.len() <= EXPECTED_VARIANT_COUNT,
+                concat!("fmod_enum! ", stringify!($Raw), " has extraneous variant(s) in ", file!()),
+            );
+        };
+
+        // SAFETY: zero is a valid value as proved by the contained assertion
+        unsafe impl ::zerocopy::FromZeros for $Name
+        where $Name: ::zerocopy::TryFromBytes,
+        {
             fn only_derive_is_allowed_to_implement_this_trait() {
-                static_assert!({
-                    let variants = [$($Name::$Variant),*];
-                    let mut found_a_zero = false;
-                    let mut i = 0;
-                    while i < variants.len() {
-                        found_a_zero |= variants[i] as $Raw == 0;
-                        i += 1;
-                    }
-                    found_a_zero
-                });
+                const ZEROED: $Name = $Name::zeroed();
+                const _: () = assert!(ZEROED as $Raw == 0);
             }
         }
     };
