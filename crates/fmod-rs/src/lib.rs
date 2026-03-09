@@ -66,8 +66,9 @@ pub mod studio;
 #[cfg(doc)]
 pub mod platform;
 
-pub(crate) mod error;
-pub(crate) mod handle;
+#[doc(no_inline)]
+pub use self::core::{Error, Handle, Result};
+
 pub(crate) mod utils;
 
 // deliberate glob import ambiguity with self::core::* mods
@@ -89,9 +90,6 @@ mod _glob_prevention {
 
 #[doc(no_inline)]
 pub use crate::core::*;
-
-#[doc(inline)]
-pub use self::{error::*, handle::*};
 
 raw! {
     /// Raw API Bindings
