@@ -57,6 +57,7 @@ extern crate self as fmod;
 #[macro_use]
 pub(crate) mod macros;
 
+pub(crate) mod handle;
 pub(crate) mod shims;
 pub(crate) mod utils;
 
@@ -70,8 +71,8 @@ pub mod studio;
 #[cfg(doc)]
 pub mod platform;
 
-#[doc(no_inline)]
-pub use self::core::{Error, Handle, Result};
+#[doc(inline)]
+pub use self::handle::*;
 
 // deliberate glob import ambiguity with self::core::* mods
 #[allow(ambiguous_glob_reexports, unused)]

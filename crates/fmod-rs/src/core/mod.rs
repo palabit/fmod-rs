@@ -1,10 +1,9 @@
 #![doc = include_str!("README.md")]
 
 mod error;
-pub(crate) mod handle;
 
 #[doc(inline)]
-pub use self::{error::*, handle::*};
+pub use self::error::*;
 
 /// Functionality not associated with a specific object.
 pub mod common {
