@@ -56,21 +56,41 @@ macro_rules! whoops {
     }};
 }
 
+macro_rules! assert_unsafe_precondition {
+    ($message:expr, ($($name:ident:$ty:ty = $arg:expr),*$(,)?) => $e:expr $(,)?) => {
+        cfg_select! {
+            feature = "unstable_ub_checks" => {
+                ::core::assert_unsafe_precondition! { check_library_ub, $message, ($($name:$ty = $arg),*) => $e }
+            }
+            _ => {{
+                #[inline]
+                #[track_caller]
+                const extern "C" fn precondition_check($($name:ty),*) {
+                    if !($e) {
+                        panic!(concat!("unsafe precondition(s) violated: ", $message,
+                            "\n\nThis indicates a bug in the program. \
+                            This Undefined Behavior check is optional, and cannot be relied on for safety."));
+                    }
+                }
+                if cfg!(debug_assertions) {
+                    precondition_check($($arg),*);
+                }
+            }}
+        }
+    }
+}
+
 macro_rules! log {
     ($level:ident, $($args:tt)*) => {
         ::std::cfg_select! {
             feature = "log" => {{
                 ::log::$level!($($args)*);
             }}
-            debug_assertions => {{
-                use ::std::io::prelude::*;
-                let _ = writeln!(::std::io::stderr(), $($args)*);
-            }}
             _ => {{
                 let _ = format_args!($($args)*);
             }}
         }
-    }
+    };
 }
 
 macro_rules! opaque_type {
@@ -660,7 +680,10 @@ macro_rules! fmod_enum {
             }
             raw! {
                 pub const unsafe fn from_raw(raw: $Raw) -> $Name {
-                    debug_assert!($MIN <= raw && raw < $MAX);
+                    assert_unsafe_precondition!(
+                        concat!("Raw `", stringify!($Name), "` value should be in ", stringify!($MIN), "..(", stringify!($MAX), ")"),
+                        (raw: $Raw = raw) => $MIN <= raw && raw < $MAX,
+                    );
                     unsafe { ::std::mem::transmute(raw) }
                 }
             }
@@ -675,13 +698,19 @@ macro_rules! fmod_enum {
             }
             raw! {
                 pub const unsafe fn from_raw_ref(raw: &$Raw) -> &$Name {
-                    debug_assert!($MIN <= *raw && *raw < $MAX);
+                    assert_unsafe_precondition!(
+                        concat!("Raw `", stringify!($Name), "` value should be in ", stringify!($MIN), "..(", stringify!($MAX), ")"),
+                        (raw: $Raw = *raw) => $MIN <= raw && raw < $MAX,
+                    );
                     unsafe { &*(raw as *const $Raw as *const $Name ) }
                 }
             }
             raw! {
                 pub unsafe fn from_raw_mut(raw: &mut $Raw) -> &mut $Name {
-                    debug_assert!($MIN <= *raw && *raw < $MAX);
+                    assert_unsafe_precondition!(
+                        concat!("Raw `", stringify!($Name), "` value should be in ", stringify!($MIN), "..(", stringify!($MAX), ")"),
+                        (raw: $Raw = *raw) => $MIN <= raw && raw < $MAX,
+                    );
                     unsafe { &mut *(raw as *mut $Raw as *mut $Name ) }
                 }
             }

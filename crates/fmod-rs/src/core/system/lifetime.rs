@@ -26,7 +26,7 @@ impl System {
     ///
     /// In the common case where the system is used as a global resource, you
     /// can use [`Handle::leak`] to get `&'static System`, which will then allow
-    /// all resources aquired from the system to be `Handle<'static, Resource>`.
+    /// all resources acquired from the system to be `Handle<'static, Resource>`.
     /// Dealing in `'static` types avoids the lifetime annotation burden and
     /// unlocks new patterns, like [anymap] backed storage used by many ECSs.
     ///
@@ -129,19 +129,11 @@ impl System {
     /// [ghost-cell]: https://lib.rs/crates/ghost-cell
     /// [qcell's `LCell`]: https://lib.rs/crates/qcell
     pub unsafe fn new_unchecked() -> Result<Handle<'static, Self>> {
-        cfg_select! {
-            debug_assertions => {
-                let Some(mut system_count) = GLOBAL_SYSTEM_STATE.try_write() else {
-                    // NB: will assert_unsafe_precondition!(false)
-                    unreachable_unchecked()
-                };
-            }
-            _ => {
-                let mut system_count = unsafe {
-                    &mut *GLOBAL_SYSTEM_STATE.data_ptr()
-                };
-            }
-        }
+        assert_unsafe_precondition!(
+            "detected unsafe race in `fmod::System::new_unchecked`",
+            () => GLOBAL_SYSTEM_STATE.try_write().is_some(),
+        );
+        let mut system_count = unsafe { &mut *GLOBAL_SYSTEM_STATE.data_ptr() };
         Self::new_inner(&mut system_count)
     }
 

@@ -137,13 +137,19 @@ impl ErrorInfo<'_> {
 
     /// Function that the error occurred on.
     pub fn function_name(&self) -> Cow<'_, str> {
-        debug_assert!(!self.function_name.is_null());
+        assert_unsafe_precondition!(
+            "`function_name` in `ErrorInfo` should not be null",
+            (function_name: *const c_char = self.function_name) => !function_name.is_null(),
+        );
         unsafe { CStr::from_ptr(self.function_name) }.to_string_lossy()
     }
 
-    /// Function parameters that the error ocurred on.
+    /// Function parameters that the error occurred on.
     pub fn function_params(&self) -> Cow<'_, str> {
-        debug_assert!(!self.function_params.is_null());
+        assert_unsafe_precondition!(
+            "`function_params` in `ErrorInfo` should not be null",
+            (function_params: *const c_char = self.function_params) => !function_params.is_null(),
+        );
         unsafe { CStr::from_ptr(self.function_params) }.to_string_lossy()
     }
 }

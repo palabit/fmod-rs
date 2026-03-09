@@ -62,6 +62,7 @@ unstable = [
     "unstable_sized_hierarchy",
     "unstable_read_buf",
     "unstable_trait_alias",
+    "unstable_ub_checks",
 ]
 
 ## Use `#[doc(cfg())]` to display cfg gates in documentation.
@@ -74,6 +75,8 @@ unstable_sized_hierarchy = []
 unstable_read_buf = []
 ## Make `ChannelControlCallback` a proper trait alias.
 unstable_trait_alias = []
+## Use `assert_unsafe_precondition!` where possible instead of `debug_assert!`.
+unstable_ub_checks = []
 
 [dependencies]
 fmod-core-sys = { workspace = true, optional = true }

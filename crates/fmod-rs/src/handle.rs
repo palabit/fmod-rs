@@ -37,7 +37,10 @@ pub unsafe trait Resource: PointeeSized + fmt::Debug + Sealed {
     #[cfg_attr(not(feature = "raw"), doc(hidden))]
     #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
     unsafe fn from_raw<'a>(this: *mut Self::Raw) -> &'a Self {
-        debug_assert!(!this.is_null());
+        assert_unsafe_precondition!(
+            "fmod::Resource pointer must not be null",
+            (this: *mut () = this as _) => !this.is_null(),
+        );
         &*Self::cast_from_raw(this)
     }
 
@@ -47,7 +50,10 @@ pub unsafe trait Resource: PointeeSized + fmt::Debug + Sealed {
     #[cfg_attr(not(feature = "raw"), doc(hidden))]
     #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
     unsafe fn from_raw_mut<'a>(this: *mut Self::Raw) -> &'a mut Self {
-        debug_assert!(!this.is_null());
+        assert_unsafe_precondition!(
+            "fmod::Resource pointer must not be null",
+            (this: *mut () = this as _) => !this.is_null(),
+        );
         &mut *Self::cast_from_raw(this)
     }
 

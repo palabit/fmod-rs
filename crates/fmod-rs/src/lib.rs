@@ -6,6 +6,17 @@
 )]
 #![cfg_attr(feature = "unstable_read_buf", feature(core_io_borrowed_buf, read_buf))]
 #![cfg_attr(feature = "unstable_trait_alias", feature(trait_alias))]
+#![cfg_attr(
+    feature = "unstable_ub_checks",
+    feature(
+        core_intrinsics,
+        fmt_arguments_from_str,
+        panic_internals,
+        rustc_attrs,
+        ub_checks,
+    )
+)]
+#![cfg_attr(feature = "unstable_ub_checks", allow(internal_features))]
 #![allow(rustdoc::broken_intra_doc_links)] // TODO: remove once more items exist
 #![allow(clippy::unit_arg)] // for use as Ok(callback()), where it's desirable
 #![allow(clippy::unnecessary_operation)] // for phantom slice indexing checks
