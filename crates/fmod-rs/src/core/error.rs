@@ -290,12 +290,13 @@ impl fmt::Display for Error {
     }
 }
 
-raw! {
-    /// Extension trait for <code>Result&lt;(), [Error]&gt;</code>.
-    #[allow(private_bounds)]
-    pub trait ResultExt: Sealed {
-        fn into_raw(self) -> FMOD_RESULT;
-    }
+/// Extension trait for <code>Result&lt;(), [Error]&gt;</code>.
+#[allow(private_bounds)]
+pub trait ResultExt: Sealed {
+    #[cfg_attr(not(feature = "raw"), doc(hidden))]
+    #[cfg_attr(feature = "unstable_doc_cfg", doc(cfg(feature = "raw")))]
+    #[allow(missing_docs)]
+    fn into_raw(self) -> FMOD_RESULT;
 }
 
 trait Sealed {}
