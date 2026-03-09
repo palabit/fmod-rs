@@ -23,6 +23,7 @@ _ide_default = [
     "mint",
     "raw",
     "unstable_doc_cfg",
+    "unstable_sized_hierarchy",
     "unstable_read_buf",
     "unstable_trait_alias",
 ]
@@ -58,6 +59,7 @@ _use_bundled_bindings_for_docs = ["dep:fmod-rs-sys-for-doc"]
 unstable = [
     "unstable_doc_cfg",
     # "unstable_extern_type",
+    "unstable_sized_hierarchy",
     "unstable_read_buf",
     "unstable_trait_alias",
 ]
@@ -65,7 +67,9 @@ unstable = [
 ## Use `#[doc(cfg())]` to display cfg gates in documentation.
 unstable_doc_cfg = []
 # ## Use extern types for FMOD resource types. (Removes `impl Deref for Handle`)
-# unstable_extern_type = []
+# unstable_extern_type = ["unstable_sized_hierarchy"]
+## Use `PointeeSized` to support types that do not have a known size.
+unstable_sized_hierarchy = []
 ## Use `Read::read_buf` to elide some otherwise unnecessary copies.
 unstable_read_buf = []
 ## Make `ChannelControlCallback` a proper trait alias.

@@ -1,5 +1,8 @@
 use {
-    crate::utils::{catch_user_unwind, fmod_get_string},
+    crate::{
+        shims::DerefSized,
+        utils::{catch_user_unwind, fmod_get_string},
+    },
     fmod::{raw::*, *},
     std::{
         ffi::c_void,

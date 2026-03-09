@@ -1,10 +1,11 @@
-#![cfg_attr(feature = "unstable_read_buf", feature(core_io_borrowed_buf, read_buf))]
 #![cfg_attr(feature = "unstable_doc_cfg", feature(doc_cfg))]
-#![cfg_attr(feature = "unstable_trait_alias", feature(trait_alias))]
+#![cfg_attr(feature = "unstable_extern_type", feature(extern_types))]
 #![cfg_attr(
-    feature = "unstable_extern_type",
-    feature(extern_types, sized_hierarchy, trivial_bounds)
+    feature = "unstable_sized_hierarchy",
+    feature(sized_hierarchy, trivial_bounds)
 )]
+#![cfg_attr(feature = "unstable_read_buf", feature(core_io_borrowed_buf, read_buf))]
+#![cfg_attr(feature = "unstable_trait_alias", feature(trait_alias))]
 #![allow(rustdoc::broken_intra_doc_links)] // TODO: remove once more items exist
 #![allow(clippy::unit_arg)] // for use as Ok(callback()), where it's desirable
 #![allow(clippy::unnecessary_operation)] // for phantom slice indexing checks
@@ -51,10 +52,13 @@ format into your tools and development pipelines, use the [fsbank] module.
 #![doc = ::document_features::document_features!()]
 #![allow(rustdoc::redundant_explicit_links)]
 
+extern crate self as fmod;
+
 #[macro_use]
 pub(crate) mod macros;
 
-extern crate self as fmod;
+pub(crate) mod shims;
+pub(crate) mod utils;
 
 #[cfg(feature = "core")]
 pub mod core;
@@ -68,8 +72,6 @@ pub mod platform;
 
 #[doc(no_inline)]
 pub use self::core::{Error, Handle, Result};
-
-pub(crate) mod utils;
 
 // deliberate glob import ambiguity with self::core::* mods
 #[allow(ambiguous_glob_reexports, unused)]

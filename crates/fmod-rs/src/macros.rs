@@ -726,8 +726,10 @@ macro_rules! fmod_enum {
         };
 
         // SAFETY: zero is a valid value as proved by the contained assertion
+        #[allow(trivial_bounds)]
         unsafe impl ::zerocopy::FromZeros for $Name
-        where $Name: ::zerocopy::TryFromBytes,
+        where
+            $Name: ::zerocopy::TryFromBytes,
         {
             fn only_derive_is_allowed_to_implement_this_trait() {
                 const ZEROED: $Name = $Name::zeroed();

@@ -1,9 +1,10 @@
 #![allow(private_bounds)]
 
 use {
+    crate::shims::{DerefSized, PointeeSized},
     parking_lot::RwLock,
     std::{
-        cfg_select, fmt,
+        fmt,
         marker::PhantomData,
         mem::ManuallyDrop,
         ops::{Deref, DerefMut},
@@ -21,30 +22,6 @@ use {
 /// - `0` indicates that no system exists, and one may be created.
 /// - `>= 1` indicates that systems exist, and creating another is unsafe.
 pub(crate) static GLOBAL_SYSTEM_STATE: RwLock<usize> = RwLock::new(0);
-
-cfg_select! {
-    feature = "unstable_extern_type" => {
-        pub(crate) use std::marker::{MetaSized, PointeeSized};
-    }
-    doc => {
-        /// Shim for [`std::marker::PointeeSized`] bounds on stable.
-        pub trait PointeeSized {}
-        /// Shim for [`std::marker::MetaSized`] bounds on stable.
-        pub trait MetaSized {}
-
-        impl<T: ?Sized> PointeeSized for T {}
-        impl<T: ?Sized> MetaSized for T {}
-    }
-    _ => {
-        pub(crate) trait PointeeSized {}
-        pub(crate) trait MetaSized {}
-
-        impl<T: ?Sized> PointeeSized for T {}
-        impl<T: ?Sized> MetaSized for T {}
-    }
-}
-
-pub(crate) use MetaSized as DerefSized;
 
 #[allow(clippy::missing_safety_doc)]
 /// FMOD resources managed by a [Handle].
