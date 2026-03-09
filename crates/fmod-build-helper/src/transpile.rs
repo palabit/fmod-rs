@@ -31,7 +31,13 @@ pub fn transpile(inc: impl AsRef<Path>, header: &str, extra_fixup: &[(&str, &str
 
     macro_rules! replace {
         ($find:literal, $replace:literal $(,)?) => {
-            src = regex!($find).replace_all(&src, $replace).into_owned();
+            match regex!($find).replace_all(&src, $replace) {
+                Cow::Owned(replaced) => {
+                    src = replaced;
+                    true
+                },
+                Cow::Borrowed(_) => false,
+            }
         };
     }
 
@@ -55,10 +61,11 @@ pub fn transpile(inc: impl AsRef<Path>, header: &str, extra_fixup: &[(&str, &str
     replace!(r"^static ", "pub ");
 
     // #define F_CALLBACK F_CALL
-    replace!(r"\wF_CALLBACK\w", "F_CALL");
-    replace!("#define F_CALL F_CALL", "");
+    if replace!("#define F_CALL F_CALL", "") {
+        replace!(r"\<F_CALLBACK\>", "F_CALL");
+    }
 
-    // translate #define
+    // translate #define constants
     replace_fixpoint!(
         r"typedef ([\w ]*) (\w+);\n(/\*.*?\*/\n)?#define +(\w+) (\s*)(.*)\n",
         "${3}pub const $4: $5$2 = $6;\ntypedef $1 $2;\n",
