@@ -131,10 +131,9 @@ impl System {
     pub unsafe fn new_unchecked() -> Result<Handle<'static, Self>> {
         assert_unsafe_precondition!(
             "detected unsafe race in `fmod::System::new_unchecked`",
-            () => GLOBAL_SYSTEM_STATE.try_write().is_some(),
+            (can_write: bool = GLOBAL_SYSTEM_STATE.try_write().is_some()) => can_write,
         );
-        let mut system_count = unsafe { &mut *GLOBAL_SYSTEM_STATE.data_ptr() };
-        Self::new_inner(&mut system_count)
+        Self::new_inner(unsafe { &mut *GLOBAL_SYSTEM_STATE.data_ptr() })
     }
 
     unsafe fn new_inner(system_count: &mut usize) -> Result<Handle<'static, Self>> {
