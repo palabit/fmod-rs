@@ -353,7 +353,7 @@ cfg_select! {
             /// only be done when debugging specific issues that require tracing that
             /// area's execution; these are truly verbose trace level logging targets.
             pub fn ideal_debug_flags() -> DebugFlags {
-                use log::{Level, log_enabled};
+                use ::log::{Level, log_enabled};
                 let mut debug_flags = DebugFlags::LevelNone;
 
                 if log_enabled!(target: "fmod", Level::Error) {
@@ -384,7 +384,7 @@ cfg_select! {
 
         fn handle_init_failure(error: Error) {
             match error {
-                Error::Unsupported => log::info!("FMOD debug disabled"),
+                Error::Unsupported => ::log::info!("FMOD debug disabled"),
                 error => whoops!(panic, "Error during FMOD debug initialization: {error}"),
             }
         }

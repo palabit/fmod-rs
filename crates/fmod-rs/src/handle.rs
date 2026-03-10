@@ -143,7 +143,7 @@ impl<'a, T: ?Sized + PointeeSized + Resource> Handle<'a, T> {
 
     pub(crate) unsafe fn new(raw: *mut T::Raw) -> Self {
         let this = Self::from_raw(raw);
-        log!(trace, "Created {this:?}");
+        fmod::log::trace!("Created {this:?}");
         this
     }
 
@@ -239,7 +239,7 @@ impl<T: ?Sized + PointeeSized + Resource> HandleExt<T> for Option<Handle<'_, T>>
             None => yeet!(fmod::Error::InvalidHandle),
         };
         unsafe { T::release(this) }?;
-        log!(trace, "Released {this:?}");
+        fmod::log::trace!("Released {this:?}");
         Ok(())
     }
 

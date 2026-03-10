@@ -315,7 +315,7 @@ pub(crate) unsafe extern "system" fn system_callback<C: SystemCallback>(
             C::record_position_changed(system, sound, position)
         },
         _ => {
-            whoops!(error, "unknown system callback type: {kind:?}");
+            fmod::log::error!("unknown system callback type: {kind:?}");
             yeet!(Error::InvalidParam)
         },
     })

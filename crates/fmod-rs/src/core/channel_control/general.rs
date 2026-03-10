@@ -68,7 +68,7 @@ pub(crate) unsafe extern "system" fn channel_control_callback<C: ChannelControlC
         FMOD_CHANNELCONTROL_CHANNEL => channel_callback::<C>,
         FMOD_CHANNELCONTROL_CHANNELGROUP => channel_group_callback::<C>,
         _ => {
-            whoops!(error, "unknown channel control type: {:?}", controltype);
+            fmod::log::error!("unknown channel control type: {:?}", controltype);
             return FMOD_ERR_INVALID_PARAM;
         },
     };

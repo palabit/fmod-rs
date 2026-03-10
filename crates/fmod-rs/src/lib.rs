@@ -67,6 +67,7 @@ extern crate self as fmod;
 
 #[macro_use]
 pub(crate) mod macros;
+pub(crate) use self::macros::log;
 
 pub(crate) mod handle;
 pub(crate) mod shims;

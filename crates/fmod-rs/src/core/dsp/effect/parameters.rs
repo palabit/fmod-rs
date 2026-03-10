@@ -293,7 +293,7 @@ pub mod ConvolutionReverb {
                 | SoundFormat::Pcm24
                 | SoundFormat::Pcm32
                 | SoundFormat::PcmFloat => {
-                    whoops!(error, "Impulse Response sound is the wrong audio format");
+                    fmod::log::error!("Impulse Response sound is the wrong audio format");
                     yeet!(Error::Format); // FIXME; don't actually panic though
                 },
             }

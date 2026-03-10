@@ -91,7 +91,7 @@ pub(crate) unsafe extern "system" fn channel_callback<C: ChannelCallback>(
     catch_user_unwind(|| {
         let control_type = ChannelControlType::try_from_raw(controltype)?;
         if control_type != ChannelControlType::Channel {
-            whoops!(error, "channel callback called with channel group");
+            fmod::log::error!("channel callback called with channel group");
             yeet!(Error::InvalidParam);
         }
 

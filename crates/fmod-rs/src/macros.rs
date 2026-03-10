@@ -33,15 +33,12 @@ macro_rules! doc_callout {
 }
 
 macro_rules! whoops {
-    (error, $($args:tt)*) => {{
-        log!(error, $($args)*);
-    }};
     (panic, $($args:tt)*) => {{
         // NB: assume panics get logged, don't double log
         if cfg!(debug_assertions) && !::std::thread::panicking() {
             panic!($($args)*);
         } else {
-            whoops!(error, $($args)*);
+            ::fmod::log::error!($($args)*);
         }
     }};
 }
@@ -55,9 +52,9 @@ macro_rules! assert_unsafe_precondition {
             _ => {{
                 #[inline]
                 #[track_caller]
-                const extern "C" fn precondition_check($($name:ty),*) {
+                const fn precondition_check($($name:ty),*) {
                     if !($e) {
-                        panic!(concat!("unsafe precondition(s) violated: ", $message,
+                        ::nounwind::panic_nounwind!(concat!("unsafe precondition(s) violated: ", $message,
                             "\n\nThis indicates a bug in the program. \
                             This Undefined Behavior check is optional, and cannot be relied on for safety."));
                     }
@@ -81,6 +78,24 @@ macro_rules! log {
             }}
         }
     };
+}
+
+pub(crate) mod log {
+    macro_rules! error {
+        ($($args:tt)*) => {
+            log! { error, $($args)* }
+        }
+    }
+    pub(crate) use error;
+
+    macro_rules! trace {
+        ($($args:tt)*) => {
+            log! { trace, $($args)* }
+        }
+    }
+    pub(crate) use trace;
+
+    pub(crate) use ::log::*;
 }
 
 macro_rules! raw {

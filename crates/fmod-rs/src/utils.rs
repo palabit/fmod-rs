@@ -145,9 +145,9 @@ where
     std::panic::catch_unwind(f).unwrap_or_else(|err| {
         let callback = std::any::type_name::<F>();
         if let Some(e) = cool_asserts::get_panic_message(&err) {
-            whoops!(error, "panicked in {callback}: {e}");
+            fmod::log::error!("panicked in {callback}: {e}");
         } else {
-            whoops!(error, "panicked in {callback}");
+            fmod::log::error!("panicked in {callback}");
         }
         Err(Error::RustPanicked)
     })
