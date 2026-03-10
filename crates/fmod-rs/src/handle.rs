@@ -115,7 +115,7 @@ impl<T: ?Sized + PointeeSized + Resource> Drop for Handle<'_, T> {
         let this = unsafe { Self::from_raw(self.as_raw()) };
         match this.release() {
             Ok(()) => {}, // all good
-            Err(error) => whoops!("Error releasing {self:?}: {error}"),
+            Err(error) => whoops!(panic, "Error releasing {self:?}: {error}"),
         }
     }
 }

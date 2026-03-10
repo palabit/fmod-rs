@@ -101,7 +101,7 @@ pub(crate) unsafe extern "system" fn channel_group_callback<C: ChannelGroupCallb
     catch_user_unwind(|| {
         let control_type = ChannelControlType::from_raw(controltype);
         if control_type != ChannelControlType::ChannelGroup {
-            whoops!(no_panic: "channel group callback called with channel");
+            whoops!(error, "channel group callback called with channel");
             yeet!(Error::InvalidParam);
         }
 
@@ -112,7 +112,11 @@ pub(crate) unsafe extern "system" fn channel_group_callback<C: ChannelGroupCallb
             | ChannelControlCallbackType::End
             | ChannelControlCallbackType::VirtualVoice
             | ChannelControlCallbackType::SyncPoint => {
-                whoops!(no_panic: "invalid callback type {:?} for channel group", callbacktype);
+                whoops!(
+                    error,
+                    "invalid callback type {:?} for channel group",
+                    callbacktype
+                );
                 yeet!(Error::InvalidParam)
             },
             ChannelControlCallbackType::Occlusion => {

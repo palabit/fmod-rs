@@ -36,9 +36,10 @@ impl System {
         let system_exists = GLOBAL_SYSTEM_STATE.upgradable_read();
         if *system_exists != 0 {
             whoops!(
+                panic,
                 "Only one FMOD system may be created safely. \
                 Read the docs on `System::new_unchecked` if you actually mean to create more than one system. \
-                Note: constructing a studio system automatically creates a core system for you!"
+                Note: constructing a studio system automatically creates a core system for you!",
             );
             yeet!(Error::Initialized);
         }

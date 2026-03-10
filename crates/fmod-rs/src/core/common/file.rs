@@ -66,7 +66,7 @@ impl Drop for DiskBusyLock {
         match set_disk_busy(false) {
             Ok(()) => (),
             Err(error) => {
-                whoops!("Error unlocking file busy state: {error}");
+                whoops!(panic, "Error unlocking file busy state: {error}");
             },
         }
     }

@@ -186,7 +186,7 @@ impl Tag<'_> {
                 TagDataType::StringUtf16 => TagData::Str(Cow::Owned(string_from_utf16le_lossy(data))),
                 TagDataType::StringUtf16be => TagData::Str(Cow::Owned(string_from_utf16be_lossy(data))),
                 r#type => {
-                    whoops!(no_panic: "unknown {type:?} (len {}) encountered", tag.datalen);
+                    whoops!(panic, "unknown {type:?} (len {}) encountered", tag.datalen);
                     yeet!(Error::RustPanicked);
                 },
             };

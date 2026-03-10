@@ -131,7 +131,11 @@ impl ErrorInfo<'_> {
         //     map!(studio::CommandReplay);
         // }
 
-        whoops!("unknown/unmapped instance type: {:?}", self.instance_type);
+        whoops!(
+            panic,
+            "unknown/unmapped instance type: {:?}",
+            self.instance_type
+        );
         unsafe { Instance::Unknown(&*self.instance.cast()) }
     }
 
@@ -311,7 +315,7 @@ pub(crate) unsafe extern "system" fn system_callback<C: SystemCallback>(
             C::record_position_changed(system, sound, position)
         },
         _ => {
-            whoops!(no_panic: "unknown system callback type: {kind:?}");
+            whoops!(error, "unknown system callback type: {kind:?}");
             yeet!(Error::InvalidParam)
         },
     })
@@ -516,7 +520,7 @@ impl Drop for DspLock<'_> {
         match unsafe { self.system.unlock_dsp() } {
             Ok(()) => (),
             Err(e) => {
-                whoops!("error unlocking DSP engine: {e}");
+                whoops!(panic, "error unlocking DSP engine: {e}");
             },
         }
     }

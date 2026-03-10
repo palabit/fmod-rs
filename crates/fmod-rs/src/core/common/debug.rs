@@ -385,7 +385,7 @@ cfg_select! {
         fn handle_init_failure(error: Error) {
             match error {
                 Error::Unsupported => log::info!("FMOD debug disabled"),
-                error => whoops!("Error during FMOD debug initialization: {error}"),
+                error => whoops!(panic, "Error during FMOD debug initialization: {error}"),
             }
         }
     }

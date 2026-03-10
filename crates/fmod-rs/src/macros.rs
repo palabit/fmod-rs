@@ -33,17 +33,16 @@ macro_rules! doc_callout {
 }
 
 macro_rules! whoops {
-    {
-        no_panic: $($args:tt)*
-    } => {{
+    (error, $($args:tt)*) => {{
         log!(error, $($args)*);
     }};
-    ($($args:tt)*) => {{
+    (panic, $($args:tt)*) => {{
         // NB: assume panics get logged, don't double log
         if cfg!(debug_assertions) && !::std::thread::panicking() {
             panic!($($args)*);
+        } else {
+            whoops!(error, $($args)*);
         }
-        whoops!(no_panic: $($args)*);
     }};
 }
 

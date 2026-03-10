@@ -59,7 +59,8 @@ impl System {
             != Mode::default()
         {
             whoops!(
-                "System::create_sound called with advanced mode {mode:?}; use create_sound_ex instead"
+                panic,
+                "System::create_sound called with advanced mode {mode:?}; use create_sound_ex instead",
             );
             yeet!(Error::InvalidParam);
         }
@@ -149,7 +150,8 @@ impl System {
             Mode::OpenUser | Mode::OpenMemory | Mode::OpenMemoryPoint | Mode::OpenRaw
         ) {
             whoops!(
-                "System::create_stream called with extended mode {mode:?}; use create_sound_ex instead"
+                panic,
+                "System::create_stream called with extended mode {mode:?}; use create_sound_ex instead",
             );
             yeet!(Error::InvalidParam);
         }
