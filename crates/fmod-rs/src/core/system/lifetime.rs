@@ -1,7 +1,7 @@
 use {
     fmod::{raw::*, *},
     parking_lot::{RwLock, RwLockUpgradableReadGuard},
-    std::{cfg_select, ptr},
+    std::ptr,
 };
 
 /// Only one system may be safely created at a time, as system create and
