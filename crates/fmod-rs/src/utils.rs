@@ -251,7 +251,7 @@ unsafe impl<const N: usize, const M: usize> LessThanOrEqual<M> for Const<N> wher
 
 macro_rules! impl_lt {
     ($N:literal, $M:literal $(,)?) => {
-        static_assert!($N < $M);
+        const _: () = assert!($N < $M);
         unsafe impl LessThan<$M> for Const<$N> {}
     };
     ($N:literal, $($M:literal),* $(,)?) => {

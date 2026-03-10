@@ -201,10 +201,10 @@ macro_rules! fmod_enum {
 
         $(
             $(#[cfg($vcfg)])?
-            static_assert!($MIN <= $Name::$Variant.into_raw() && $Name::$Variant.into_raw() < $MAX);
+            const _: () = assert!($MIN <= $Name::$Variant.into_raw() && $Name::$Variant.into_raw() < $MAX);
         )*
 
-        static_assert!($MIN <= 0 && 0 < $MAX);
+        const _: () = assert!($MIN <= 0 && 0 < $MAX);
         assert_type_eq!($Raw, i32);
 
         #[allow(deprecated)]

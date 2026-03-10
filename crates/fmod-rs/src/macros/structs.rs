@@ -69,9 +69,11 @@ macro_rules! fmod_struct {
             )*
         }
 
-        static_assert!(::std::mem::size_of::<$Name>() == ::std::mem::size_of::<$Raw>());
-        static_assert!(::std::mem::align_of::<$Name>() == ::std::mem::align_of::<$Raw>());
-        $($(static_assert!(::std::mem::offset_of!($Name, $field) == ::std::mem::offset_of!($Raw, $raw_field));)?)*
+        const _: () = {
+            assert!(::std::mem::size_of::<$Name>() == ::std::mem::size_of::<$Raw>());
+            assert!(::std::mem::align_of::<$Name>() == ::std::mem::align_of::<$Raw>());
+            $($(assert!(::std::mem::offset_of!($Name, $field) == ::std::mem::offset_of!($Raw, $raw_field));)?)*
+        };
 
         impl$(<$lt>)? $Name$(<$lt>)? {
             raw! {

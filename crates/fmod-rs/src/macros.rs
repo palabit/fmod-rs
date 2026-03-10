@@ -1,16 +1,3 @@
-macro_rules! static_assert {
-    ($cond:expr $(,)?) => {
-        #[allow(deprecated)]
-        #[allow(clippy::manual_range_contains)]
-        const _: () = { ::std::assert!($cond) };
-    };
-    ($cond:expr, $msg:expr $(,)?) => {
-        #[allow(deprecated)]
-        #[allow(clippy::manual_range_contains)]
-        const _: () = { ::std::assert!($cond, $msg) };
-    };
-}
-
 macro_rules! yeet {
     ($err:expr) => {
         return Err($err)?

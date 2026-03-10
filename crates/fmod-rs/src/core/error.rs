@@ -41,7 +41,7 @@ macro_rules! error_enum_struct {
         impl $Name {
             raw! {
                 pub const fn from_raw(raw: FMOD_RESULT) -> Result {
-                    static_assert!(FMOD_OK == 0);
+                    const _: () = assert!(FMOD_OK == 0);
                     match NonZeroI32::new(raw) {
                         Some(raw) => Err($Name { raw }),
                         None => Ok(()),
@@ -77,7 +77,7 @@ macro_rules! error_enum_struct {
 }
 
 const FMOD_ERR_RUST_PANIC: i32 = i32::from_be_bytes(*"🦀".as_bytes().as_array().unwrap());
-static_assert!(FMOD_ERR_RUST_PANIC < 0, "custom error should be negative");
+const _: () = assert!(FMOD_ERR_RUST_PANIC < 0, "custom error should be negative");
 
 error_enum_struct! {
     /// An error that FMOD can emit.

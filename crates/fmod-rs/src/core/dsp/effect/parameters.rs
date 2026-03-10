@@ -1809,7 +1809,7 @@ unsafe impl DspParamValue for Range<f32> {
 
 // impl DspParamType for Sidechain {
 //     fn set_dsp_parameter(dsp: &Dsp, index: i32, value: &Self) -> Result {
-//         static_assert!(size_of::<FMOD_DSP_PARAMETER_SIDECHAIN>() == size_of::<FMOD_BOOL>());
+//         const _: () = assert!(size_of::<FMOD_DSP_PARAMETER_SIDECHAIN>() == size_of::<FMOD_BOOL>());
 //         let value = value.sidechainenable as FMOD_BOOL;
 //         dsp.set_parameter::<[u8; size_of::<FMOD_BOOL>()]>(index, value.to_ne_bytes())
 //     }

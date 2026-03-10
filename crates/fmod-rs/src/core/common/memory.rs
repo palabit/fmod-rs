@@ -6,7 +6,7 @@ use {
     std::{
         alloc::{Layout, alloc, dealloc, realloc},
         ffi::{c_char, c_uint, c_void},
-        mem::{self, MaybeUninit},
+        mem::MaybeUninit,
         ptr,
     },
 };
@@ -282,7 +282,7 @@ unsafe impl AllocCallback for AllocViaRust {
                 return ptr;
             }
 
-            static_assert!(mem::size_of::<usize>() <= 16);
+            const _: () = assert!(size_of::<usize>() <= 16);
             ptr.cast::<usize>().write(layout.size());
             ptr.add(16)
         }
