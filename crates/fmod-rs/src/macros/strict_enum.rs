@@ -201,6 +201,7 @@ macro_rules! fmod_enum {
 
         $(
             $(#[cfg($vcfg)])?
+            #[allow(deprecated)]
             const _: () = assert!($MIN <= $Name::$Variant.into_raw() && $Name::$Variant.into_raw() < $MAX);
         )*
 
