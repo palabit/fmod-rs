@@ -15,13 +15,7 @@ use {
     },
 };
 
-/// Information function to retrieve the state of FMOD disk access.
-///
-/// Do not use this function to synchronize your own reads with, as due to
-/// timing, you might call this function and it says false = it is not busy,
-/// but the split second after calling this function, internally FMOD might
-/// set it to busy. Use [file::set_disk_busy] for proper mutual exclusion as
-/// it uses semaphores.
+#[doc = fmod_doc!("core-api-common", "file_getdiskbusy")]
 pub fn get_disk_busy() -> Result<bool> {
     // prevent racing System init
     let _lock = GLOBAL_SYSTEM_STATE.read();
@@ -31,14 +25,7 @@ pub fn get_disk_busy() -> Result<bool> {
     Ok(busy != 0)
 }
 
-/// Sets the busy state for disk access ensuring mutual exclusion of file
-/// operations.
-///
-/// If file IO is currently being performed by FMOD this function will block
-/// until it has completed.
-///
-/// This function should be called in pairs once to set the state, then
-/// again to clear it once complete.
+#[doc = fmod_doc!("core-api-common", "file_setdiskbusy")]
 pub fn set_disk_busy(busy: bool) -> Result {
     // prevent racing System init
     let _lock = GLOBAL_SYSTEM_STATE.read();

@@ -13,24 +13,7 @@ use {
 
 static DEBUG_LAYER_INITIALIZED: Once = Once::new();
 
-/// Specify the level and delivery method of log messages when using the
-/// logging version of FMOD.
-///
-/// This method initializes logs to go to the default log location per
-/// platform, i.e. Visual Studio output window, stderr, LogCat, etc.
-///
-/// This function will return [Error::Unsupported] when using the
-/// non-logging (release) versions of FMOD.
-///
-/// The logging version of FMOD can be recognized by the 'L' suffix in the
-/// library name, fmodL.dll or libfmodL.so for instance.
-///
-/// Note that:
-/// - [DebugFlags::LevelLog] produces informational, warning and error
-///   messages.
-/// - [DebugFlags::LevelWarning] produces warnings and error messages.
-/// - [DebugFlags::LevelError] produces error messages only.
-///
+#[doc = fmod_doc!("core-api-common", "debug_initialize")]
 #[cfg_attr(
     feature = "log",
     doc = doc_callout!(

@@ -138,6 +138,12 @@ macro_rules! ffi {
     }};
 }
 
+macro_rules! fmod_doc {
+    ($fname:literal, $id:literal) => {
+        include_str!(concat!($id, ".md"))
+    };
+}
+
 #[macro_use]
 mod flags;
 #[macro_use]

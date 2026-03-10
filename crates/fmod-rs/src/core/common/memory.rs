@@ -11,19 +11,7 @@ use {
     },
 };
 
-/// Returns information on the memory usage of FMOD.
-///
-/// `blocking` indicates whether to favour speed or accuracy. Specifying
-/// `true` for this parameter will flush the DSP network to make sure all
-/// queued allocations happen immediately, which can be costly.
-///
-/// This information is byte accurate and counts all allocs and frees
-/// internally. This is useful for determining a fixed memory size to make
-/// FMOD work within for fixed memory machines such as consoles.
-///
-/// Note that if using [memory::initialize_pool], the memory usage will be
-/// slightly higher than without it, as FMOD has to have a small amount of
-/// memory overhead to manage the available memory.
+#[doc = fmod_doc!("core-api-common", "memory_getstats")]
 pub fn get_stats(blocking: bool) -> Result<Stats> {
     // prevent racing System init
     let _lock = GLOBAL_SYSTEM_STATE.read();
